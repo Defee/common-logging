@@ -17,10 +17,10 @@
  */
 
 #endregion
- 
- using System;
-using System.Collections.Generic;
+
 using Common.Logging.Configuration;
+using System;
+using System.Collections.Generic;
 
 
 namespace Common.Logging.MultipleLogger
@@ -31,6 +31,9 @@ namespace Common.Logging.MultipleLogger
     /// </summary>
     public class MultiLoggerFactoryAdapter : ILoggerFactoryAdapter
     {
+        protected internal const string NET45_LOGGING_SECTION_NAME = "common/logging.multipleLoggers";
+        protected internal const string NETSTANDARD_LOGGING_SECTION_NAME = "common:logging:multipleLoggers";
+
         /// <summary>
         /// Registered Logger Factory Adapters.
         /// </summary>
@@ -48,16 +51,18 @@ namespace Common.Logging.MultipleLogger
         public MultiLoggerFactoryAdapter(NameValueCollection properties) : this()
         {
             var reader = new DefaultConfigurationReader();
+#if NET_4_0
+            var childFactoryAdapterSettings = reader.GetSection(NET45_LOGGING_SECTION_NAME);
+#else
+            var childFactoryAdapterSettings = reader.GetSection(NETSTANDARD_LOGGING_SECTION_NAME);
 
-            var childFactoryAdapterSettings = reader.GetSection("common/logging.multipleLoggers");
-
+#endif
             if (!(childFactoryAdapterSettings is List<LogSetting>))
                 return;
 
             foreach (var factoryAdapterSetting in childFactoryAdapterSettings as List<LogSetting>)
-            {
                 LoggerFactoryAdapters.Add(LogManager.BuildLoggerFactoryAdapterFromLogSettings(factoryAdapterSetting));
-            }
+
         }
 
         /// <summary>

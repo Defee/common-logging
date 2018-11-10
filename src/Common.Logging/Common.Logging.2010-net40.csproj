@@ -1,25 +1,21 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{440D903A-D409-48FC-A6C4-3EE69CCD663B}</ProjectGuid>
+    
     <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    
+    
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Common</RootNamespace>
     <AssemblyName>Common.Logging</AssemblyName>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
+    <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -34,7 +30,6 @@
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -61,12 +56,20 @@
     <NoWarn>1607</NoWarn>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
+<ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+  <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+</ItemGroup>
+<ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+  <PackageReference Include="Microsoft.Extensions.Configuration" Version="1.1.2"></PackageReference>
+  
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Xml" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="1.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.1.2" />
+</ItemGroup>
+  
   <ItemGroup>
     <Compile Include="..\Common.Logging.Portable\AssemblyInfo.cs">
       <Link>AssemblyInfo.cs</Link>
@@ -100,6 +103,9 @@
     </Compile>
     <Compile Include="..\Common.Logging.Portable\Logging\Configuration\NameValueCollectionHelper.cs">
       <Link>Logging\Configuration\NameValueCollectionHelper.cs</Link>
+    </Compile>
+    <Compile Include="..\Common.Logging.Portable\Logging\Configuration\NetCoreConfigurationHandler.cs">
+      <Link>Logging\Configuration\NetCoreConfigurationHandler.cs</Link>
     </Compile>
     <Compile Include="..\Common.Logging.Portable\Logging\Factory\AbstractCachingLoggerFactoryAdapter.cs">
       <Link>Logging\Factory\AbstractCachingLoggerFactoryAdapter.cs</Link>
@@ -155,6 +161,14 @@
     <Compile Include="Logging\Simple\ConsoleOutLoggerFactoryAdapter.cs" />
     <Compile Include="Logging\Simple\TraceLogger.cs" />
     <Compile Include="Logging\Simple\TraceLoggerFactoryAdapter.cs" />
+    <Compile Include="Utils\Extensions\Config\Json\JsonConfigurationStringParser.cs" />
+    <Compile Include="Utils\Extensions\Config\Json\JsonStringConfigurationExtensions.cs" />
+    <Compile Include="Utils\Extensions\Config\Json\JsonStringProvider.cs" />
+    <Compile Include="Utils\Extensions\Config\Json\JsonStringSource.cs" />
+    <Compile Include="Utils\Extensions\Config\Xml\XmlStringConfigurationExtensions.cs" />
+    <Compile Include="Utils\Extensions\Config\Xml\XmlStringProvider.cs" />
+    <Compile Include="Utils\Extensions\Config\Xml\XmlStringSource.cs" />
+    <Compile Include="Utils\Extensions\StringExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
@@ -184,12 +198,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Common.Logging.Core\Common.Logging.Core.2010.csproj">
-      <Project>{7eeb2191-b3fc-4509-aa4b-a345c386eeed}</Project>
-      <Name>Common.Logging.Core.2010</Name>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

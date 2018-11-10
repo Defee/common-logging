@@ -187,7 +187,7 @@ namespace Common.Logging.Serilog
         public override void Trace(object message)
         {
             if (IsTraceEnabled)
-                _logger.Verbose(message.ToString());
+                _logger.Verbose(message?.ToString());
 
         }
 
@@ -201,7 +201,7 @@ namespace Common.Logging.Serilog
         public override void Trace(object message, Exception exception)
         {
             if (IsTraceEnabled)
-                _logger.Verbose(exception, message.ToString());
+                _logger.Verbose(exception, message?.ToString());
         }
 
         /// <summary>
@@ -346,7 +346,7 @@ namespace Common.Logging.Serilog
         public override void Debug(object message)
         {
             if (IsDebugEnabled)
-                _logger.Debug(message.ToString());
+                _logger.Debug(message?.ToString());
         }
 
         /// <summary>
@@ -359,7 +359,7 @@ namespace Common.Logging.Serilog
         public override void Debug(object message, Exception exception)
         {
             if (IsDebugEnabled)
-                _logger.Debug(exception, message.ToString());
+                _logger.Debug(exception, message?.ToString());
         }
 
         /// <summary>
@@ -506,7 +506,7 @@ namespace Common.Logging.Serilog
         public override void Info(object message)
         {
             if (IsInfoEnabled)
-                _logger.Information(message.ToString());
+                _logger.Information(message?.ToString());
         }
 
         /// <summary>
@@ -519,7 +519,7 @@ namespace Common.Logging.Serilog
         public override void Info(object message, Exception exception)
         {
             if (IsInfoEnabled)
-                _logger.Information(exception, message.ToString());
+                _logger.Information(exception, message?.ToString());
         }
 
         /// <summary>
@@ -665,7 +665,7 @@ namespace Common.Logging.Serilog
         public override void Warn(object message)
         {
             if (IsWarnEnabled)
-                _logger.Warning(message.ToString());
+                _logger.Warning(message?.ToString());
         }
 
         /// <summary>
@@ -678,7 +678,7 @@ namespace Common.Logging.Serilog
         public override void Warn(object message, Exception exception)
         {
             if (IsWarnEnabled)
-                _logger.Warning(exception, message.ToString());
+                _logger.Warning(exception, message?.ToString());
         }
 
         /// <summary>
@@ -824,7 +824,7 @@ namespace Common.Logging.Serilog
         public override void Error(object message)
         {
             if (IsErrorEnabled)
-                _logger.Error(message.ToString());
+                _logger.Error(message?.ToString());
         }
 
         /// <summary>
@@ -837,7 +837,7 @@ namespace Common.Logging.Serilog
         public override void Error(object message, Exception exception)
         {
             if (IsErrorEnabled)
-                _logger.Error(exception, message.ToString());
+                _logger.Error(exception, message?.ToString());
         }
 
         /// <summary>
@@ -983,7 +983,7 @@ namespace Common.Logging.Serilog
         public override void Fatal(object message)
         {
             if (IsFatalEnabled)
-                _logger.Fatal(message.ToString());
+                _logger.Fatal(message?.ToString());
         }
 
         /// <summary>
@@ -996,7 +996,7 @@ namespace Common.Logging.Serilog
         public override void Fatal(object message, Exception exception)
         {
             if (IsFatalEnabled)
-                _logger.Fatal(exception, message.ToString());
+                _logger.Fatal(exception, message?.ToString());
 
         }
 

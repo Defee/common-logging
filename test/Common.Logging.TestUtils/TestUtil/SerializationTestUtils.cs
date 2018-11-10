@@ -18,11 +18,11 @@
 
 #endregion
 
+using NUnit.Framework;
 using System;
 using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-using NUnit.Framework;
 
 namespace Common.Logging
 {
@@ -39,13 +39,12 @@ namespace Common.Logging
         #region Test Ourselves
 
         [Test]
-        [ExpectedException(typeof(SerializationException))]
         public void WithNonSerializableObject()
         {
             TestObject o = new TestObject();
             Assert.IsFalse(o is ISerializable);
             Assert.IsFalse(IsSerializable(o));
-            TrySerialization(o);
+            var ex = Assert.Throws<SerializationException>(() => TrySerialization(o));
         }
 
         [Test]

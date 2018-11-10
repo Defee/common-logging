@@ -72,8 +72,8 @@ namespace Common.Logging.Simple
         /// <remarks>
         /// Looks for level, showDateTime, showLogName, dateTimeFormat items from 
         /// <paramref key="properties" /> for use when the GetLogger methods are called.
-        /// <see cref="System.Configuration.ConfigurationManager"/> for more information on how to use the 
-        /// standard .NET application configuraiton file (App.config/Web.config) 
+        /// <see ref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-2.1"/> for more information on how to use the 
+        /// standard .NET application configuration file
         /// to configure this adapter.
         /// </remarks>
         /// <param name="properties">The key value collection, typically specified by the user in 

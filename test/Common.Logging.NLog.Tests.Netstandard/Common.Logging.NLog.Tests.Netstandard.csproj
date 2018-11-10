@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="CommonLoggingCfg.json" />
+    <None Remove="NLog.config" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\test\Common.Logging.NLog10.Tests\Logger\NLog\CommonLoggingTargetTests.cs" Link="Logger\NLog\CommonLoggingTargetTests.cs" />
+    <Compile Include="..\..\test\Common.Logging.NLog10.Tests\Logger\NLog\NLogLoggerFactoryAdapterTests.cs" Link="Logger\NLog\NLogLoggerFactoryAdapterTests.cs" />
+    <Compile Include="..\..\test\Common.Logging.NLog41.Tests\Logger\NLog\NLogLoggerFactoryAdapterVariablesContextTests.cs" Link="Logger\NLog\NLogLoggerFactoryAdapterVariablesContextTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="CommonLoggingCfg.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NLog.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="NUnit" Version="3.11.0"></PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" Version="3.11.0"></PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logger\NLog\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Common.Logging.NLog.Netstandard\Common.Logging.NLog.Netstandard.csproj" />
+    <ProjectReference Include="..\Common.Logging.TestUtils\Common.Logging.TestUtils-net40.csproj" />
+  </ItemGroup>
+
+</Project>

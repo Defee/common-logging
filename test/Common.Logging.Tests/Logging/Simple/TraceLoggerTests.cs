@@ -23,6 +23,10 @@ using System.Configuration;
 using System.Diagnostics;
 using Common.TestUtil;
 using Common.Logging.Configuration;
+#if NETSTANDARD
+using Microsoft.Extensions.Configuration;
+#endif
+using Newtonsoft.Json;
 using NUnit.Framework;
 
 namespace Common.Logging.Simple
@@ -57,7 +61,41 @@ namespace Common.Logging.Simple
             Assert.IsTrue(log.IsErrorEnabled);
             Assert.IsTrue(log.IsFatalEnabled);
         }
+#if NETSTANDARD
+        [Test]
+        public void UsesTraceSource()
+        {
+            var configuration = NetCoreConfigurationHandler.InitDefaultCommonLogging() as IConfiguration;
+            Console.WriteLine("Config:" + JsonConvert.SerializeObject(configuration));
 
+            Assert.AreEqual("FromAppConfig", configuration.GetSection("appSettings:appConfigCheck").Value);
+
+            // just ensure, that <system.diagnostics> is configured for our test
+            Trace.Refresh();
+            TraceSource ts = new TraceSource("TraceLoggerTests", SourceLevels.All);
+            Assert.AreEqual(1, ts.Listeners.Count);
+            Assert.AreEqual(typeof(CapturingTraceListener), ts.Listeners[0].GetType());
+
+            CapturingTraceListener.Events.Clear();
+            ts.TraceEvent(TraceEventType.Information, 0, "message");
+            Assert.AreEqual(TraceEventType.Information, CapturingTraceListener.Events[0].EventType);
+            Assert.AreEqual("message", CapturingTraceListener.Events[0].FormattedMessage);
+
+            // reset events and set loggerFactoryAdapter
+            CapturingTraceListener.Events.Clear();
+            NameValueCollection props = new NameValueCollection();
+            props["useTraceSource"] = "TRUE";
+            TraceLoggerFactoryAdapter adapter = new TraceLoggerFactoryAdapter(props);
+            adapter.ShowDateTime = false;
+            LogManager.Adapter = adapter;
+
+            ILog log = LogManager.GetLogger("TraceLoggerTests");
+            log.WarnFormat("info {0}", "arg");
+            Assert.AreEqual(TraceEventType.Warning, CapturingTraceListener.Events[0].EventType);
+            Assert.AreEqual("[WARN]  TraceLoggerTests - info arg", CapturingTraceListener.Events[0].FormattedMessage);
+        }
+#endif
+#if NETFRAMEWORK
         [Test]
         public void UsesTraceSource()
         {
@@ -89,5 +127,7 @@ namespace Common.Logging.Simple
             Assert.AreEqual(TraceEventType.Warning, CapturingTraceListener.Events[0].EventType);
             Assert.AreEqual("[WARN]  TraceLoggerTests - info arg", CapturingTraceListener.Events[0].FormattedMessage);
         }
+
+#endif
     }
 }

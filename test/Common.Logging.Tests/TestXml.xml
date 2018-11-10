@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <common>
+    <logging>
+      <factoryAdapter>
+        <type>Common.Logging.Simple.ConsoleOutLoggerFactoryAdapter, Common.Logging</type>
+        <arguments>
+          <level>
+          DEBUG
+          </level>
+          <showLogName>
+          true
+          </showLogName>
+          <showDateTime>
+          true
+          </showDateTime>
+          <dateTimeFormat>
+          yyyy/MM/dd HH\:mm\:ss\:fff
+          </dateTimeFormat>
+        </arguments>
+      </factoryAdapter>
+    </logging>
+  </common>
+</configuration>

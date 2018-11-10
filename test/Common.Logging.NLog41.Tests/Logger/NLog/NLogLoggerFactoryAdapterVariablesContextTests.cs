@@ -28,6 +28,10 @@ namespace Common.Logger.NLog
     [TestFixture]
     public class NLogLoggerFactoryAdapterVariablesContextTests
     {
+        public NLogLoggerFactoryAdapterVariablesContextTests()
+        {
+            
+        }
         [Test]
         public void CheckGlobalVariablesSet()
         {

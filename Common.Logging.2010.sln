@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EC54316A-A3B9-4EF5-A74C-1EC2344D0EA4}"
 	ProjectSection(SolutionItems) = preProject
@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Portable.2010", "src\Common.Logging.Portable\Common.Logging.Portable.2010.csproj", "{A777809C-DB8B-4399-B6D4-8B1A4877A0AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.2010-net40", "src\Common.Logging\Common.Logging.2010-net40.csproj", "{440D903A-D409-48FC-A6C4-3EE69CCD663B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.2010-net40", "src\Common.Logging\Common.Logging.2010-net40.csproj", "{440D903A-D409-48FC-A6C4-3EE69CCD663B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.EntLib31.2010-net40", "src\Common.Logging.EntLib31\Common.Logging.EntLib31.2010-net40.csproj", "{C493B9F9-EB13-4D07-BBBD-A333DCF15164}"
 EndProject
@@ -24,7 +24,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Log4Net1210.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Log4Net129.2010-net40", "src\Common.Logging.Log4Net129\Common.Logging.Log4Net129.2010-net40.csproj", "{A6A7257A-D1AE-4A09-8C1C-F55E099C8A8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Tests.2010-net40", "test\Common.Logging.Tests\Common.Logging.Tests.2010-net40.csproj", "{94E4E1B4-D424-4EB9-BF34-2EE8CC3D7048}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.Tests.2010-net40", "test\Common.Logging.Tests\Common.Logging.Tests.2010-net40.csproj", "{94E4E1B4-D424-4EB9-BF34-2EE8CC3D7048}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Common.Logging.Tests.Integration.Vb.2010-net40", "test\Common.Logging.Integration.Tests.Vb\Common.Logging.Tests.Integration.Vb.2010-net40.vbproj", "{3DFB4EAE-A2DD-43F1-ABA6-E28EB1C7DC67}"
 EndProject
@@ -48,7 +48,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Log4Net129.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Tests.BinaryCompatibility.2010-net40", "test\Common.Logging.BinaryCompatibility.Tests\Common.Logging.Tests.BinaryCompatibility.2010-net40.csproj", "{E641F51F-1B51-4B94-B419-A902EABCE4D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.TestUtils-net40", "test\Common.Logging.TestUtils\Common.Logging.TestUtils-net40.csproj", "{F5193CD8-B431-48ED-B101-D8DBEF766140}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.TestUtils-net40", "test\Common.Logging.TestUtils\Common.Logging.TestUtils-net40.csproj", "{F5193CD8-B431-48ED-B101-D8DBEF766140}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Log4Net1211.2010-net40", "src\Common.Logging.Log4Net1211\Common.Logging.Log4Net1211.2010-net40.csproj", "{2756B5D0-B576-417F-A107-1695DF76D34A}"
 EndProject
@@ -138,7 +138,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_pcl-example", "_pcl-exampl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThePortableProject", "examples\PCLExample\ThePortableProject\ThePortableProject.csproj", "{E215F828-468E-45B3-8483-245DB607354A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.Core.2010", "src\Common.Logging.Core\Common.Logging.Core.2010.csproj", "{7EEB2191-B3FC-4509-AA4B-A345C386EEED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.Core.2010", "src\Common.Logging.Core\Common.Logging.Core.2010.csproj", "{7EEB2191-B3FC-4509-AA4B-A345C386EEED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheApplication", "examples\PCLExample\TheApplication\TheApplication.csproj", "{74CE8CDA-60B4-4BC6-A521-5B44B7A6E5A5}"
 EndProject
@@ -250,6 +250,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.Logging.NLog4412.Tes
 		{7D87085A-C95D-421B-BE22-27B24163AC0B} = {7D87085A-C95D-421B-BE22-27B24163AC0B}
 		{E9D93D91-F2C8-4037-A603-E3B2A6C06AFA} = {E9D93D91-F2C8-4037-A603-E3B2A6C06AFA}
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NLogStandard", "NLogStandard", "{49742D3C-B8FA-4D68-A918-4090E249DD12}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.NLog.Netstandard", "src\Common.Logging.NLog.Netstandard\Common.Logging.NLog.Netstandard.csproj", "{AFE01EE8-1C42-45C4-AED6-DA34959948BB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.NLog.Tests.Netstandard", "src\Common.Logging.NLog.Tests.Netstandard\Common.Logging.NLog.Tests.Netstandard.csproj", "{1B8B53D5-1305-4E23-AD6B-D1558656DBE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Logging.Common", "src\Common.Logging.Portable\Common.Logging.Common.csproj", "{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NetStandard", "NetStandard", "{0D9DD53D-F111-4A2A-BB87-967928ED9767}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -609,6 +619,18 @@ Global
 		{FD1B1313-BF7E-4EB7-910A-D8ABA9A33697}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD1B1313-BF7E-4EB7-910A-D8ABA9A33697}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD1B1313-BF7E-4EB7-910A-D8ABA9A33697}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFE01EE8-1C42-45C4-AED6-DA34959948BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFE01EE8-1C42-45C4-AED6-DA34959948BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFE01EE8-1C42-45C4-AED6-DA34959948BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFE01EE8-1C42-45C4-AED6-DA34959948BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B8B53D5-1305-4E23-AD6B-D1558656DBE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B8B53D5-1305-4E23-AD6B-D1558656DBE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B8B53D5-1305-4E23-AD6B-D1558656DBE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B8B53D5-1305-4E23-AD6B-D1558656DBE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -702,8 +724,13 @@ Global
 		{E9D93D91-F2C8-4037-A603-E3B2A6C06AFA} = {645E8182-EEAF-44AD-8DE2-5B15D2E1BD76}
 		{7D87085A-C95D-421B-BE22-27B24163AC0B} = {645E8182-EEAF-44AD-8DE2-5B15D2E1BD76}
 		{FD1B1313-BF7E-4EB7-910A-D8ABA9A33697} = {645E8182-EEAF-44AD-8DE2-5B15D2E1BD76}
+		{49742D3C-B8FA-4D68-A918-4090E249DD12} = {0D9DD53D-F111-4A2A-BB87-967928ED9767}
+		{AFE01EE8-1C42-45C4-AED6-DA34959948BB} = {49742D3C-B8FA-4D68-A918-4090E249DD12}
+		{1B8B53D5-1305-4E23-AD6B-D1558656DBE3} = {49742D3C-B8FA-4D68-A918-4090E249DD12}
+		{829F0577-6E7C-4626-A3B4-0AEC4ABC2F02} = {D26BC7B2-718C-4F97-AF36-4377E19ECE62}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {79A6C5EC-449A-4A67-9944-D126127C8000}
 		NAntAddinLastFileName = Common.Logging.build
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,11 @@
+﻿{
+  "CommonLogging": {
+    "factoryAdapter": {
+      "type": "Common.Logging.NLog.NLogLoggerFactoryAdapter, Common.Logging.NLog41",
+      "arguments": {
+        "configType": "FILE-WATCH",
+        "configFile": "NLog.config"
+      }
+    }
+  }
+}

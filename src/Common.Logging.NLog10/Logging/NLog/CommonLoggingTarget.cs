@@ -23,6 +23,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using Common.Logging.Configuration;
 using NLog;
+#if !NLOG2
+using NLog.Targets;
+#endif
 #if NLOG2
 using NLog.Layouts;
 using NLog.Targets;
@@ -59,13 +62,13 @@ namespace Common.Logging.NLog
         static CommonLoggingTarget()
         {
             logMethods = new Dictionary<global::NLog.LogLevel, LogMethod>();
-            logMethods[global::NLog.LogLevel.Trace] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Trace(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Debug] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Debug(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Info] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Info(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Warn] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Warn(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Error] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Error(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Fatal] = delegate(ILog log, MessageFormatter msg, Exception ex) { log.Fatal(delegate(FormatMessageHandler m) { m(msg()); }, ex); };
-            logMethods[global::NLog.LogLevel.Off] = delegate(ILog log, MessageFormatter msg, Exception ex) { };
+            logMethods[global::NLog.LogLevel.Trace] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Trace(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Debug] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Debug(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Info] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Info(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Warn] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Warn(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Error] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Error(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Fatal] = delegate (ILog log, MessageFormatter msg, Exception ex) { log.Fatal(delegate (FormatMessageHandler m) { m(msg()); }, ex); };
+            logMethods[global::NLog.LogLevel.Off] = delegate (ILog log, MessageFormatter msg, Exception ex) { };
         }
 
         /// <summary>
@@ -96,6 +99,7 @@ namespace Common.Logging.NLog
 
             ILog logger = LogManager.GetLogger(logEvent.LoggerName);
             LogMethod log = logMethods[logEvent.Level];
+            //IF NLog version >=1
 #if NLOG2
             log(logger, () => Layout.Render(logEvent), logEvent.Exception);
 #else

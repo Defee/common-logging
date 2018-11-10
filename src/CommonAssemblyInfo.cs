@@ -19,6 +19,7 @@ using System.Security.Permissions;
 
 [assembly: CLSCompliantAttribute(true)]
 
+#if !NETSTANDARD2_0
 #if PORTABLE
 [assembly: AssemblyConfigurationAttribute("portable; release")]
 [assembly: AssemblyInformationalVersionAttribute("3.4.1; portable; release")]
@@ -36,4 +37,4 @@ using System.Security.Permissions;
 [assembly: AssemblyCultureAttribute("")]
 [assembly: AssemblyVersionAttribute("3.4.1")]
 [assembly: AssemblyDelaySignAttribute(false)]
-
+#endif

@@ -45,9 +45,7 @@ namespace Common.Logging.Configuration
         /// </remarks>
         public object GetSection(string sectionName)
         {
-#if DOTNETCORE     // No System.Configuration in DotNetCore, replace with something DotNetCore-specific?
-            return null;
-#else
+            // No System.Configuration in DotNetCore, replace with something DotNetCore-specific?
 #if PORTABLE
             // We should instead look for something implementing 
             // IConfigurationReader in (platform specific) Common.Logging dll and use that
@@ -67,6 +65,9 @@ namespace Common.Logging.Configuration
                 throw new PlatformNotSupportedException("Could not find System.Configuration.ConfigurationManager.GetSection method");
 
             return getSection.Invoke(null, new[] {sectionName});
+#else
+#if NETSTANDARD2_0
+            return new LogConfigurationReader (NetCoreConfigurationHandler.GetDefaultLogConfig()).GetSection(sectionName);
 #else
             return System.Configuration.ConfigurationManager.GetSection(sectionName);
 #endif

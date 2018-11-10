@@ -18,12 +18,14 @@
 
 #endregion
 
-using System;
-using System.Diagnostics;
 using Common.Logging.Configuration;
 using Common.Logging.Simple;
 using NUnit.Framework;
+using System;
+#if NETFRAMEWORK
 using Rhino.Mocks;
+#endif
+using FakeItEasy;
 
 namespace Common.Logging
 {
@@ -34,13 +36,18 @@ namespace Common.Logging
     [TestFixture]
     public class LogManagerTests
     {
-        public MockRepository mocks;
+#if NETFRAMEWORK
+        
 
+        public MockRepository mocks;
+#endif
         [SetUp]
         public void SetUp()
         {
             LogManager.Reset();
+#if NETFRAMEWORK
             mocks = new MockRepository();
+#endif
         }
 
         [Test]
@@ -56,26 +63,68 @@ namespace Common.Logging
         [Test]
         public void Reset()
         {
+#if NETCOREAPP
+
+
             LogManager.Reset();
             Assert.IsInstanceOf<DefaultConfigurationReader>(LogManager.ConfigurationReader);
 
             Assert.Throws<ArgumentNullException>(delegate { LogManager.Reset(null); });
-
+            var r = A.Fake<IConfigurationReader>();
+            A.CallTo(() => r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Returns(new TraceLoggerFactoryAdapter());
+            LogManager.Reset(r);
+            Assert.IsInstanceOf<TraceLoggerFactoryAdapter>(LogManager.Adapter);
+#endif
+#if NETFRAMEWORK
             IConfigurationReader r = mocks.StrictMock<IConfigurationReader>();
             using (mocks.Record())
             {
                 Expect.Call(r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Return(new TraceLoggerFactoryAdapter());
             }
-            using(mocks.Playback())
+            using (mocks.Playback())
             {
                 LogManager.Reset(r);
                 Assert.IsInstanceOf<TraceLoggerFactoryAdapter>(LogManager.Adapter);
             }
+#endif
         }
 
         [Test]
         public void ConfigureFromConfigurationReader()
         {
+#if NETCOREAPP
+            IConfigurationReader r = A.Fake<IConfigurationReader>(x => x.Strict());
+
+            
+           
+
+            ILog log;
+            A.CallTo(() => r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Returns(null);
+            // accepts null sectionhandler return
+            LogManager.Reset(r);
+            log = LogManager.GetLogger<LogManagerTests>();
+            Assert.AreEqual(typeof(NoOpLogger), log.GetType());
+
+            // accepts ILoggerFactoryAdapter sectionhandler returns
+            LogManager.Reset(r);
+            A.CallTo(() => r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Returns(new TraceLoggerFactoryAdapter());
+            log = LogManager.GetLogger(typeof(LogManagerTests));
+            Assert.AreEqual(typeof(TraceLogger), log.GetType());
+            A.CallTo(() => r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Returns(new LogSetting(typeof(ConsoleOutLoggerFactoryAdapter), null));
+
+            // accepts LogSetting sectionhandler returns
+            LogManager.Reset(r);
+            log = LogManager.GetLogger(typeof(LogManagerTests));
+            Assert.AreEqual(typeof(ConsoleOutLogger), log.GetType());
+            A.CallTo(() => r.GetSection(LogManager.COMMON_LOGGING_SECTION)).Returns(new object());
+            // every other return type throws ConfigurationException
+            LogManager.Reset(r);
+            Assert.Throws<ConfigurationException>(() => log = LogManager.GetLogger(typeof(LogManagerTests))
+            );
+
+#endif
+
+#if NETFRAMEWORK
             IConfigurationReader r = mocks.StrictMock<IConfigurationReader>();
             using (mocks.Record())
             {
@@ -114,6 +163,7 @@ namespace Common.Logging
                                       }
                   );
             }
+#endif
         }
 
         [Test]
@@ -122,7 +172,8 @@ namespace Common.Logging
             ILog log;
 
             // accepts simple factory adapter
-            LogManager.Configure(new LogConfiguration() {
+            LogManager.Configure(new LogConfiguration()
+            {
                 FactoryAdapter = new FactoryAdapterConfiguration()
                 {
                     Type = typeof(TraceLoggerFactoryAdapter).FullName
@@ -149,88 +200,185 @@ namespace Common.Logging
             });
             log = LogManager.GetLogger<LogManagerTests>();
             Assert.AreEqual(typeof(DebugOutLogger), log.GetType());
-            Assert.AreEqual(true, ((DebugOutLogger) log).ShowLogName);
+            Assert.AreEqual(true, ((DebugOutLogger)log).ShowLogName);
         }
 
         [Test]
         public void ConfigureFromStandaloneConfig()
         {
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-    <logging>
-      <factoryAdapter type='Common.Logging.Simple.ConsoleOutLoggerFactoryAdapter, Common.Logging'>
-      </factoryAdapter>
-    </logging>";
+                <configuration>
+                  <common>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.Simple.ConsoleOutLoggerFactoryAdapter, Common.Logging</type>
+                      </factoryAdapter>
+                    </logging>
+                  </common>
+                </configuration>";
+
+#endif
+#if NETFRAMEWORK
+          const string xml =
+                @"<?xml version='1.0' encoding='UTF-8' ?>
+                    <logging>
+                      <factoryAdapter type='Common.Logging.Simple.ConsoleOutLoggerFactoryAdapter, Common.Logging'>
+                      </factoryAdapter>
+                    </logging>";  
+#endif
+            
             ILog log = GetLog(xml);
             Assert.IsAssignableFrom(typeof(ConsoleOutLogger), log);
         }
 
 
         [Test]
-        [ExpectedException(typeof(ConfigurationException))]
         public void InvalidAdapterType()
         {
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-    <logging>
-      <factoryAdapter type='Common.Logging.Simple.NonExistentAdapter, Common.Logging'>
-      </factoryAdapter>
-    </logging>";
-            GetLog(xml);
+                <configuration>
+                  <common>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.Simple.NonExistentAdapter, Common.Logging</type>
+                      </factoryAdapter>
+                    </logging>
+                  </common>
+                </configuration>";
+
+#endif
+
+#if NETFRAMEWORK
+            const string xml =
+                @"<?xml version='1.0' encoding='UTF-8' ?>
+                    <logging>
+                      <factoryAdapter type='Common.Logging.Simple.NonExistentAdapter, Common.Logging'>
+                      </factoryAdapter>
+                    </logging>";
+#endif
+            Assert.Throws<ConfigurationException>(()=> GetLog(xml));
         }
 
         [Test]
-        [ExpectedException(typeof(ConfigurationException))]
         public void AdapterDoesNotImplementInterface()
         {
+
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-    <logging>
-      <factoryAdapter type='Common.Logging.StandaloneConfigurationReader, Common.Logging.Tests'>
-      </factoryAdapter>
-    </logging>";
-            GetLog(xml);
+                <configuration>
+                  <common>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.StandaloneConfigurationReader, Common.Logging.Tests</type>
+                      </factoryAdapter>
+                    </logging>
+                  </common>
+                </configuration>";
+
+#endif
+
+#if NETFRAMEWORK
+            const string xml =
+                          @"<?xml version='1.0' encoding='UTF-8' ?>
+                        <logging>
+                          <factoryAdapter type='Common.Logging.StandaloneConfigurationReader, Common.Logging.Tests'>
+                          </factoryAdapter>
+                        </logging>"; 
+#endif
+            Assert.Throws<ConfigurationException>(() => GetLog(xml));
         }
 
         [Test]
-        [ExpectedException(typeof(ConfigurationException))]
         public void AdapterDoesNotHaveCorrectCtors()
         {
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-    <logging>
-      <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
-      </factoryAdapter>
-    </logging>";
-            GetLog(xml);
+                <configuration>
+                  <common>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests</type>
+                      </factoryAdapter>
+                    </logging>
+                  </common>
+                </configuration>";
+#endif
+#if NETFRAMEWORK
+            const string xml =
+                    @"<?xml version='1.0' encoding='UTF-8' ?>
+                    <logging>
+                      <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
+                      </factoryAdapter>
+                    </logging>"; 
+#endif
+            Assert.Throws<ConfigurationException>(() => GetLog(xml));
         }
 
         [Test]
-        [ExpectedException(typeof(ConfigurationException))]
         public void AdapterDoesNotHaveCorrectCtorsWithArgs()
         {
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-    <logging>
-      <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
-            <arg key='level' value='DEBUG' />
-      </factoryAdapter>
-    </logging>";
-            GetLog(xml);
+                <configuration>
+                  <common>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests</type>
+                      </factoryAdapter>
+                        <arguments>
+                            <level>DEBUG</level>
+                        </arguments>
+                    </logging>
+                  </common>
+                </configuration>";
+#endif
+#if NETFRAMEWORK
+            const string xml =
+                    @"<?xml version='1.0' encoding='UTF-8' ?>
+                    <logging>
+                      <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
+                            <arg key='level' value='DEBUG' />
+                      </factoryAdapter>
+                    </logging>"; 
+#endif
+            Assert.Throws<ConfigurationException>(() => GetLog(xml));
         }
 
         [Test]
         public void InvalidXmlSection()
         {
+#if NETCOREAPP
             const string xml =
                 @"<?xml version='1.0' encoding='UTF-8' ?>
-<foo>
-    <logging>
-      <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
-            <arg key='level' value='DEBUG' />
-      </factoryAdapter>
-    </logging>
-</foo>";
+                <configuration>
+                  <foo>
+                    <logging>
+                      <factoryAdapter>
+                        <type>Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests</type>
+                      </factoryAdapter>
+                    </logging>
+                  </foo>
+                </configuration>";
+
+#endif
+#if NETFRAMEWORK
+      const string xml = @"<?xml version='1.0' encoding='UTF-8' ?>
+                    <foo>
+                        <logging>
+                          <factoryAdapter type='Common.Logging.MissingCtorFactoryAdapter, Common.Logging.Tests'>
+                                <arg key='level' value='DEBUG' />
+                          </factoryAdapter>
+                        </logging>
+                    </foo>";     
+#endif
+           
             ILog log = GetLog(xml);
             // lack of proper config section fallsback to no-op logging.
             NoOpLogger noOpLogger = log as NoOpLogger;

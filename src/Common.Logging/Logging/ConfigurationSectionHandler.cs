@@ -28,6 +28,7 @@ using Common.Logging.Configuration;
 
 namespace Common.Logging
 {
+#if NETFRAMEWORK
     /// <summary>
     /// Used in an application's configuration file (App.Config or Web.Config) to configure the logging subsystem.
     /// </summary>
@@ -110,32 +111,7 @@ namespace Common.Logging
             }
 
             Type factoryType = null;
-            try
-            {
-                if (String.Compare(factoryTypeString, "CONSOLE", true) == 0)
-                {
-                    factoryType = typeof(ConsoleOutLoggerFactoryAdapter);
-                }
-                else if (String.Compare(factoryTypeString, "TRACE", true) == 0)
-                {
-                    factoryType = typeof(TraceLoggerFactoryAdapter);
-                }
-                else if (String.Compare(factoryTypeString, "NOOP", true) == 0)
-                {
-                    factoryType = typeof(NoOpLoggerFactoryAdapter);
-                }
-                else
-                {
-                    factoryType = Type.GetType(factoryTypeString, true, false);
-                }
-            }
-            catch (Exception e)
-            {
-                throw new ConfigurationException
-                  ("Unable to create type '" + factoryTypeString + "'"
-                    , e
-                  );
-            }
+            factoryType = ShortcutHelper.ParseFactoryType(factoryTypeString);
 
             XmlNodeList propertyNodes = logFactoryElement.SelectNodes(ARGUMENT_ELEMENT);
 
@@ -175,6 +151,8 @@ namespace Common.Logging
 
             return new LogSetting(factoryType, properties);
         }
+
+        
 
         /// <summary>
         /// Verifies that the logFactoryAdapter element appears once in the configuration section.
@@ -228,4 +206,56 @@ namespace Common.Logging
 
         #endregion
     }
+#endif
+
+    /// <summary>
+    /// Help with parsing common logging shortcuts as it is used in Netstandard as well.
+    /// </summary>
+    public class ShortcutHelper
+    {
+        /// <summary>
+        /// Parses Factory type from string to the actual type.
+        /// It uses shortcuts:
+        /// 1. "CONSOLE" for <see cref="ConsoleOutLoggerFactoryAdapter"/>
+        /// 2. "TRACE" for <see cref="TraceLoggerFactoryAdapter"/>
+        /// 3. "NOOP" for <see cref="NoOpLoggerFactoryAdapter"/>
+        /// </summary>
+        /// <param name="factoryTypeString">type string there.</param>
+        /// <returns>Actual type or <see cref="ConfigurationException"/> in case of exception</returns>
+        public static Type ParseFactoryType(string factoryTypeString)
+        {
+            Type factoryType;
+            try
+            {
+                
+                if (String.Compare(factoryTypeString, "CONSOLE", true) == 0)
+                {
+                    factoryType = typeof(ConsoleOutLoggerFactoryAdapter);
+                }
+                else if (String.Compare(factoryTypeString, "TRACE", true) == 0)
+                {
+                    factoryType = typeof(TraceLoggerFactoryAdapter);
+                }
+                else if (String.Compare(factoryTypeString, "NOOP", true) == 0)
+                {
+                    factoryType = typeof(NoOpLoggerFactoryAdapter);
+                }
+                else
+                {
+                    factoryType = Type.GetType(factoryTypeString, true, false);
+                }
+            }
+            catch (Exception e)
+            {
+                throw new ConfigurationException
+                ("Unable to create type '" + factoryTypeString + "'"
+                    , e
+                );
+            }
+
+            return factoryType;
+        }
+    } 
 }
+
+

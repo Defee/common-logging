@@ -102,17 +102,17 @@
       <Project>{7eeb2191-b3fc-4509-aa4b-a345c386eeed}</Project>
       <Name>Common.Logging.Core.2010</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Common.Logging.NLog4412\Common.Logging.NLog4412.2010-net40.csproj">
+    <ProjectReference Include="..\..\src\Common.Logging.NLog4411\Common.Logging.NLog4411.2010-net40.csproj">
       <Project>{ef248164-247a-42ff-9687-0d49922c9959}</Project>
-      <Name>Common.Logging.NLog4412.2010-net40</Name>
+      <Name>Common.Logging.NLog4411.2010-net40</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\Common.Logging\Common.Logging.2010-net40.csproj">
       <Project>{440D903A-D409-48FC-A6C4-3EE69CCD663B}</Project>
       <Name>Common.Logging.2010-net40</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Common.Logging.NLog4412.Tests\Common.Logging.NLog4412.Tests.2010-net40.csproj">
+    <ProjectReference Include="..\Common.Logging.NLog4411.Tests\Common.Logging.NLog4411.Tests.2010-net40.csproj">
       <Project>{87816db0-b205-4349-a783-32360c02b558}</Project>
-      <Name>Common.Logging.NLog4412.Tests.2010-net40</Name>
+      <Name>Common.Logging.NLog4411.Tests.2010-net40</Name>
     </ProjectReference>
     <ProjectReference Include="..\Common.Logging.TestUtils\Common.Logging.TestUtils-net40.csproj">
       <Project>{F5193CD8-B431-48ED-B101-D8DBEF766140}</Project>
@@ -122,7 +122,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties ProjectLinkReference="ee5ca38f-3f29-43e1-b385-03798eddc765" ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" />
+      <UserProperties ProjectLinkerExcludeFilter="\\?desktop(\\.*)?$;\\?silverlight(\\.*)?$;\.desktop;\.silverlight;\.xaml;^service references(\\.*)?$;\.clientconfig;^web references(\\.*)?$" ProjectLinkReference="ee5ca38f-3f29-43e1-b385-03798eddc765" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

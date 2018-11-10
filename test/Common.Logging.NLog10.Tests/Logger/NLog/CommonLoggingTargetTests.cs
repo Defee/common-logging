@@ -35,6 +35,10 @@ namespace Common.Logger.NLog
     [TestFixture]
     public class CommonLoggingTargetTests
     {
+        public CommonLoggingTargetTests()
+        {
+            
+        }
         [Test]
         public void RoutesToCommonLogging()
         {

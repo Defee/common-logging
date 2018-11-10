@@ -33,7 +33,7 @@ namespace Common.Logging.Simple
 	/// this would result in an endless loop for obvious reasons!
 	/// </remarks>
     /// <seealso cref="LogManager.Adapter"/>
-    /// <seealso cref="ConfigurationSectionHandler"/>
+    /// <seealso ref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-2.1"/>
     /// <author>Gilles Bayon</author>
 	/// <author>Erich Eichinger</author>
     [Serializable]

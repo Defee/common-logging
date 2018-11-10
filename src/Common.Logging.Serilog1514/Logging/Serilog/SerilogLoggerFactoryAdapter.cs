@@ -22,7 +22,9 @@ using System;
 using System.IO;
 using Common.Logging.Configuration;
 using Common.Logging.Factory;
+using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Configuration;
 
 namespace Common.Logging.Serilog
 {
@@ -66,7 +68,28 @@ namespace Common.Logging.Serilog
         /// <returns></returns>
         protected override ILog CreateLogger(string name)
         {
-            return new SerilogLogger(new LoggerConfiguration().ReadFrom.AppSettings().Enrich.WithProperty("Common.Logging.Type", name).CreateLogger());
+#if NETSTANDARD
+            //var configuration = new ConfigurationBuilder()
+            //    .AddJsonFile("appsettings.json")
+            //    .Build();
+            var cfg =NetCoreConfigurationHandler.InitDefaultCommonLogging() as IConfiguration;
+
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(cfg)
+                .Enrich
+                .WithProperty("Common.Logging.Type", name)
+                .CreateLogger();
+            return new SerilogLogger(logger);
+#endif
+#if NETFRAMEWORK
+            var logger = new LoggerConfiguration()
+                .ReadFrom.AppSettings()
+                .Enrich
+                .WithProperty("Common.Logging.Type", name)
+                .CreateLogger();
+            return new SerilogLogger(logger);
+#endif
+            
         }
     }
 }

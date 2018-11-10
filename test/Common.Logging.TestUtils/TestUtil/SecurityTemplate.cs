@@ -17,23 +17,34 @@
  */
 
 #endregion
-
+#if NETFRAMEWORK
 using System;
-using System.Collections.Generic;
-using System.Drawing.Printing;
 using System.Configuration;
-using System.Data.SqlClient;
 using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
-using System.Security.Policy;
 using System.Text;
 using System.Threading;
+using System.Security.Policy;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Reflection;
+using Common.Logging.Configuration;
+#if NETSTANDARD
+using System.Net.Http;
+using Microsoft.Extensions.Configuration;
+using Common.TempNetstandardUtils.Options;
+#endif
+
 using System.Web;
 using System.Web.Configuration;
+using System.Drawing.Printing;
+
+
+
 
 namespace Common.TestUtil
 {
@@ -77,7 +88,7 @@ namespace Common.TestUtil
         public static readonly string PERMISSIONSET_ASPNET = "ASP.Net";
 
         private readonly PolicyLevel _domainPolicy;
-//        private readonly Dictionary<string, SecurityContext> securityContextCache = new Dictionary<string, SecurityContext>();
+        //        private readonly Dictionary<string, SecurityContext> securityContextCache = new Dictionary<string, SecurityContext>();
         private bool throwOnUnknownPermissionSet = true;
 
         /// <summary>
@@ -99,7 +110,7 @@ namespace Common.TestUtil
             set
             {
                 throwOnUnknownPermissionSet = value;
-//                securityContextCache.Clear(); // clear cache
+                //                securityContextCache.Clear(); // clear cache
             }
         }
 
@@ -109,69 +120,84 @@ namespace Common.TestUtil
         /// <param name="allowUnmanagedCode">NCover requires unmangaged code permissions, set this flag <c>true</c> in this case.</param>
         public SecurityTemplate(bool allowUnmanagedCode)
         {
-            PolicyLevel pLevel = PolicyLevel.CreateAppDomainLevel();
-
-            // NOTHING permissionset
-            if (null == pLevel.GetNamedPermissionSet(PERMISSIONSET_NOTHING) )
+            try
             {
-                NamedPermissionSet noPermissionSet = new NamedPermissionSet(PERMISSIONSET_NOTHING, PermissionState.None);
-                noPermissionSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.NoFlags));
-                pLevel.AddNamedPermissionSet(noPermissionSet);
-            }            
+                PolicyLevel pLevel = PolicyLevel.CreateAppDomainLevel();
 
-            // FULLTRUST permissionset
-            if (null == pLevel.GetNamedPermissionSet(PERMISSIONSET_FULLTRUST))
-            {
-                NamedPermissionSet fulltrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_FULLTRUST, PermissionState.Unrestricted);
-                pLevel.AddNamedPermissionSet(fulltrustPermissionSet);
+                // NOTHING permissionset
+                if (null == pLevel.GetNamedPermissionSet(PERMISSIONSET_NOTHING))
+                {
+                    NamedPermissionSet noPermissionSet = new NamedPermissionSet(PERMISSIONSET_NOTHING, PermissionState.None);
+                    noPermissionSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.NoFlags));
+                    pLevel.AddNamedPermissionSet(noPermissionSet);
+                }
+
+                // FULLTRUST permissionset
+                if (null == pLevel.GetNamedPermissionSet(PERMISSIONSET_FULLTRUST))
+                {
+                    NamedPermissionSet fulltrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_FULLTRUST, PermissionState.Unrestricted);
+                    pLevel.AddNamedPermissionSet(fulltrustPermissionSet);
+                }
+                // MEDIUMTRUST permissionset (corresponds to ASP.Net permission set in web_mediumtrust.config)
+                NamedPermissionSet mediumTrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_MEDIUMTRUST, PermissionState.None);
+#if NETFRAMEWORK
+                mediumTrustPermissionSet.AddPermission(new AspNetHostingPermission(AspNetHostingPermissionLevel.Medium));
+#endif
+
+                mediumTrustPermissionSet.AddPermission(new DnsPermission(PermissionState.Unrestricted));
+                mediumTrustPermissionSet.AddPermission(new EnvironmentPermission(EnvironmentPermissionAccess.Read,
+                                                                                 "TEMP;TMP;USERNAME;OS;COMPUTERNAME"));
+                mediumTrustPermissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.AllAccess,
+                                                                            AppDomain.CurrentDomain.BaseDirectory));
+                IsolatedStorageFilePermission isolatedStorageFilePermission = new IsolatedStorageFilePermission(PermissionState.None);
+                isolatedStorageFilePermission.UsageAllowed = IsolatedStorageContainment.AssemblyIsolationByUser;
+                isolatedStorageFilePermission.UserQuota = 9223372036854775807;
+                mediumTrustPermissionSet.AddPermission(isolatedStorageFilePermission);
+#if NETFRAMEWORK
+                mediumTrustPermissionSet.AddPermission(new PrintingPermission(PrintingPermissionLevel.DefaultPrinting));
+#endif
+                SecurityPermissionFlag securityPermissionFlag = SecurityPermissionFlag.Assertion | SecurityPermissionFlag.Execution |
+                                               SecurityPermissionFlag.ControlThread | SecurityPermissionFlag.ControlPrincipal |
+                                               SecurityPermissionFlag.RemotingConfiguration;
+                if (allowUnmanagedCode)
+                {
+                    securityPermissionFlag |= SecurityPermissionFlag.UnmanagedCode;
+                }
+                mediumTrustPermissionSet.AddPermission(
+                    new SecurityPermission(securityPermissionFlag));
+                mediumTrustPermissionSet.AddPermission(new SmtpPermission(SmtpAccess.Connect));
+                mediumTrustPermissionSet.AddPermission(new SqlClientPermission(PermissionState.Unrestricted));
+                mediumTrustPermissionSet.AddPermission(new WebPermission());
+                pLevel.AddNamedPermissionSet(mediumTrustPermissionSet);
+
+                // LOWTRUST permissionset (corresponds to ASP.Net permission set in web_mediumtrust.config)
+                NamedPermissionSet lowTrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_LOWTRUST, PermissionState.None);
+#if NETFRAMEWORK
+                lowTrustPermissionSet.AddPermission(new AspNetHostingPermission(AspNetHostingPermissionLevel.Low));
+#endif
+                lowTrustPermissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read | FileIOPermissionAccess.PathDiscovery,
+                                                                            AppDomain.CurrentDomain.BaseDirectory));
+                IsolatedStorageFilePermission isolatedStorageFilePermissionLow = new IsolatedStorageFilePermission(PermissionState.None);
+                isolatedStorageFilePermissionLow.UsageAllowed = IsolatedStorageContainment.AssemblyIsolationByUser;
+                isolatedStorageFilePermissionLow.UserQuota = 1048576;
+                lowTrustPermissionSet.AddPermission(isolatedStorageFilePermissionLow);
+                SecurityPermissionFlag securityPermissionFlagLow = SecurityPermissionFlag.Execution;
+                if (allowUnmanagedCode)
+                {
+                    securityPermissionFlagLow |= SecurityPermissionFlag.UnmanagedCode;
+                }
+                lowTrustPermissionSet.AddPermission(new SecurityPermission(securityPermissionFlagLow));
+                pLevel.AddNamedPermissionSet(lowTrustPermissionSet);
+
+                //            UnionCodeGroup rootCodeGroup = new UnionCodeGroup(new AllMembershipCondition(), new PolicyStatement(noPermissionSet, PolicyStatementAttribute.Nothing));
+                //            pLevel.RootCodeGroup = rootCodeGroup;
+                _domainPolicy = pLevel;
             }
-            // MEDIUMTRUST permissionset (corresponds to ASP.Net permission set in web_mediumtrust.config)
-            NamedPermissionSet mediumTrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_MEDIUMTRUST, PermissionState.None);
-            mediumTrustPermissionSet.AddPermission(new AspNetHostingPermission(AspNetHostingPermissionLevel.Medium));
-            mediumTrustPermissionSet.AddPermission(new DnsPermission(PermissionState.Unrestricted));
-            mediumTrustPermissionSet.AddPermission(new EnvironmentPermission(EnvironmentPermissionAccess.Read,
-                                                                             "TEMP;TMP;USERNAME;OS;COMPUTERNAME"));
-            mediumTrustPermissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.AllAccess,
-                                                                        AppDomain.CurrentDomain.BaseDirectory));
-            IsolatedStorageFilePermission isolatedStorageFilePermission = new IsolatedStorageFilePermission(PermissionState.None);
-            isolatedStorageFilePermission.UsageAllowed = IsolatedStorageContainment.AssemblyIsolationByUser;
-            isolatedStorageFilePermission.UserQuota = 9223372036854775807;
-            mediumTrustPermissionSet.AddPermission(isolatedStorageFilePermission);
-            mediumTrustPermissionSet.AddPermission(new PrintingPermission(PrintingPermissionLevel.DefaultPrinting));
-            SecurityPermissionFlag securityPermissionFlag = SecurityPermissionFlag.Assertion | SecurityPermissionFlag.Execution |
-                                           SecurityPermissionFlag.ControlThread | SecurityPermissionFlag.ControlPrincipal |
-                                           SecurityPermissionFlag.RemotingConfiguration;
-            if (allowUnmanagedCode)
+            catch (Exception e)
             {
-                securityPermissionFlag |= SecurityPermissionFlag.UnmanagedCode;
+                Console.WriteLine(e);
+                throw;
             }
-            mediumTrustPermissionSet.AddPermission(
-                new SecurityPermission(securityPermissionFlag));
-            mediumTrustPermissionSet.AddPermission(new SmtpPermission(SmtpAccess.Connect));
-            mediumTrustPermissionSet.AddPermission(new SqlClientPermission(PermissionState.Unrestricted));
-            mediumTrustPermissionSet.AddPermission(new WebPermission());
-            pLevel.AddNamedPermissionSet(mediumTrustPermissionSet);
-
-            // LOWTRUST permissionset (corresponds to ASP.Net permission set in web_mediumtrust.config)
-            NamedPermissionSet lowTrustPermissionSet = new NamedPermissionSet(PERMISSIONSET_LOWTRUST, PermissionState.None);
-            lowTrustPermissionSet.AddPermission(new AspNetHostingPermission(AspNetHostingPermissionLevel.Low));
-            lowTrustPermissionSet.AddPermission(new FileIOPermission(FileIOPermissionAccess.Read|FileIOPermissionAccess.PathDiscovery,
-                                                                        AppDomain.CurrentDomain.BaseDirectory));
-            IsolatedStorageFilePermission isolatedStorageFilePermissionLow = new IsolatedStorageFilePermission(PermissionState.None);
-            isolatedStorageFilePermissionLow.UsageAllowed = IsolatedStorageContainment.AssemblyIsolationByUser;
-            isolatedStorageFilePermissionLow.UserQuota = 1048576;
-            lowTrustPermissionSet.AddPermission(isolatedStorageFilePermissionLow);
-            SecurityPermissionFlag securityPermissionFlagLow = SecurityPermissionFlag.Execution;
-            if (allowUnmanagedCode)
-            {
-                securityPermissionFlagLow |= SecurityPermissionFlag.UnmanagedCode;
-            }
-            lowTrustPermissionSet.AddPermission(new SecurityPermission(securityPermissionFlagLow));
-            pLevel.AddNamedPermissionSet(lowTrustPermissionSet);
-
-//            UnionCodeGroup rootCodeGroup = new UnionCodeGroup(new AllMembershipCondition(), new PolicyStatement(noPermissionSet, PolicyStatementAttribute.Nothing));
-//            pLevel.RootCodeGroup = rootCodeGroup;
-            _domainPolicy = pLevel;
         }
 
         /// <summary>
@@ -243,7 +269,7 @@ namespace Common.TestUtil
             }
             return null;
         }
-
+#if NETFRAMEWORK
         /// <summary>
         /// Loads the policy configuration from app.config configuration section
         /// </summary>
@@ -268,8 +294,10 @@ namespace Common.TestUtil
         /// <returns></returns>
         public static PolicyLevel LoadDomainPolicyFromAppConfig(bool throwOnError)
         {
-            TrustSection trustSection = (TrustSection)ConfigurationManager.GetSection("system.web/trust");
-            SecurityPolicySection securityPolicySection = (SecurityPolicySection)ConfigurationManager.GetSection("system.web/securityPolicy");
+
+            var trustSection = (TrustSection)ConfigurationManager.GetSection("system.web/trust");
+            var securityPolicySection = (SecurityPolicySection)ConfigurationManager.GetSection("system.web/securityPolicy");
+
 
             if ((trustSection == null) || string.IsNullOrEmpty(trustSection.Level))
             {
@@ -293,7 +321,117 @@ namespace Common.TestUtil
             PolicyLevel domainPolicy = LoadDomainPolicyFromUri(new Uri(policyFileExpanded), appDirectory, trustSection.OriginUrl);
             return domainPolicy;
         }
+#endif
+#if NETSTANDARD
+        /// <summary>
+        /// Loads the policy configuration from app.config configuration section
+        /// </summary>
+        /// <example>
+        /// Configuration is identical to web.config:
+        /// <code>
+        /// &lt;configuration&gt;
+        ///     &lt;system.web&gt;
+        ///         &lt;securityPolicy&gt;
+        ///             &lt;trustLevel name=&quot;Full&quot; policyFile=&quot;internal&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;High&quot; policyFile=&quot;web_hightrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Medium&quot; policyFile=&quot;web_mediumtrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Low&quot; policyFile=&quot;web_lowtrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Minimal&quot; policyFile=&quot;web_minimaltrust.config&quot;/&gt;
+        ///         &lt;/securityPolicy&gt;
+        ///         &lt;trust level=&quot;Medium&quot; originUrl=&quot;&quot;/&gt;
+        ///     &lt;/system.web&gt;
+        /// &lt;/configuration&gt;
+        /// </code>
+        /// </example>
+        /// <param name="config"></param>
+        /// <param name="throwOnError"></param>
+        /// <returns></returns>
+        public static PolicyLevel LoadDomainPolicyFromConfig(IConfiguration config, bool throwOnError)
+        {
+            var trustSection = config.GetSection("system.web:trust");
+            var trustOption = new TrustOptions();
+            trustSection.Bind(trustOption);
+            if (trustSection == null || string.IsNullOrEmpty(trustOption.Level))
+            {
+                if (!throwOnError) return null;
+                throw new ConfigurationErrorsException("Configuration section <system.web/trust> not found ");
+            }
+            var securityPolicySection = config.GetSection("system.web:securityPolicy");
+            var securityPolicyOption = new SecurityPolicyOption();
+            securityPolicySection.Bind(securityPolicyOption);
 
+            if (trustOption.Level == "Full")
+            {
+                return null;
+            }
+
+            if ((securityPolicySection == null) || (securityPolicyOption.TrustLevels.FirstOrDefault(it => it.Name == trustOption.Level) == null))
+            {
+                if (!throwOnError) return null;
+                throw new ConfigurationErrorsException(string.Format("configuration <system.web/securityPolicy/trustLevel@name='{0}'> not found", trustOption.Level));
+            }
+
+            string policyFileExpanded = GetPolicyFilenameExpanded(securityPolicyOption.TrustLevels.First(it => it.Name == trustOption.Level));
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            PolicyLevel domainPolicy = LoadDomainPolicyFromUri(new Uri(policyFileExpanded), appDirectory, trustOption.OriginUrl);
+            return domainPolicy;
+        }
+
+        /// <summary>
+        /// Loads the policy configuration from app.config configuration section
+        /// </summary>
+        /// <example>
+        /// Configuration is identical to web.config:
+        /// <code>
+        /// &lt;configuration&gt;
+        ///     &lt;system.web&gt;
+        ///         &lt;securityPolicy&gt;
+        ///             &lt;trustLevel name=&quot;Full&quot; policyFile=&quot;internal&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;High&quot; policyFile=&quot;web_hightrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Medium&quot; policyFile=&quot;web_mediumtrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Low&quot; policyFile=&quot;web_lowtrust.config&quot;/&gt;
+        ///             &lt;trustLevel name=&quot;Minimal&quot; policyFile=&quot;web_minimaltrust.config&quot;/&gt;
+        ///         &lt;/securityPolicy&gt;
+        ///         &lt;trust level=&quot;Medium&quot; originUrl=&quot;&quot;/&gt;
+        ///     &lt;/system.web&gt;
+        /// &lt;/configuration&gt;
+        /// </code>
+        /// </example>
+        /// <param name="config"></param>
+        /// <param name="throwOnError"></param>
+        /// <returns></returns>
+        public static PolicyLevel LoadDomainPolicyFromDefaultConfig(bool throwOnError)
+        {
+            var config = NetCoreConfigurationHandler.InitDefaultCommonLogging() as IConfiguration;
+            var trustSection = config.GetSection("system.web:trust");
+            var trustOption = new TrustOptions();
+            trustSection.Bind(trustOption);
+            if (trustSection == null || string.IsNullOrEmpty(trustOption.Level))
+            {
+                if (!throwOnError) return null;
+                throw new ConfigurationErrorsException("Configuration section <system.web/trust> not found ");
+            }
+            var securityPolicySection = config.GetSection("system.web:securityPolicy");
+            var securityPolicyOption = new SecurityPolicyOption();
+            securityPolicySection.Bind(securityPolicyOption);
+
+            if (trustOption.Level == "Full")
+            {
+                return null;
+            }
+
+            if ((securityPolicySection == null) || (securityPolicyOption.TrustLevels.FirstOrDefault(it => it.Name == trustOption.Level) == null))
+            {
+                if (!throwOnError) return null;
+                throw new ConfigurationErrorsException(string.Format("configuration <system.web/securityPolicy/trustLevel@name='{0}'> not found", trustOption.Level));
+            }
+
+            string policyFileExpanded = GetPolicyFilenameExpanded(securityPolicyOption.TrustLevels.First(it => it.Name == trustOption.Level));
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            PolicyLevel domainPolicy = LoadDomainPolicyFromUri(new Uri(policyFileExpanded), appDirectory, trustOption.OriginUrl);
+            return domainPolicy;
+        }
+#endif
         /// <summary>
         /// Loads a policy from a file (<see cref="SecurityManager.LoadPolicyLevelFromFile"/>), 
         /// replacing placeholders  
@@ -397,13 +535,13 @@ namespace Common.TestUtil
                     isRelative = false;
                 }
             }
-
-            if (isRelative)
-            {
-                string configurationElementFileSource = trustLevel.ElementInformation.Properties["policyFile"].Source;
-                string path = configurationElementFileSource.Substring(0, configurationElementFileSource.LastIndexOf('\\') + 1);
-                return path + trustLevel.PolicyFile;
-            }
+            //TODO: it is temp hotfix for netstandard. We might need to create fake object for it as well.
+            //if (isRelative)
+            //{
+            //    string configurationElementFileSource = trustLevel.ElementInformation.Properties["policyFile"].Source;
+            //    string path = configurationElementFileSource.Substring(0, configurationElementFileSource.LastIndexOf('\\') + 1);
+            //    return path + trustLevel.PolicyFile;
+            //}
             return trustLevel.PolicyFile;
         }
 
@@ -418,7 +556,13 @@ namespace Common.TestUtil
             int hRes = GetCachePath(2, pwzCachePath, ref pcchPath);
             if (hRes < 0)
             {
+
+#if NETFRAMEWORK
                 throw new HttpException("failed obtaining GAC path", hRes);
+#endif               
+#if NETSTANDARD
+                throw new IOException("failed obtaining GAC path", hRes);
+#endif
             }
             return pwzCachePath.ToString();
         }
@@ -490,17 +634,19 @@ namespace Common.TestUtil
         //        }
 
 
-//        [SecurityCritical]
-//        private static SecurityContext CaptureSecurityContextNoIdentityFlow()
-//        {
-//            if (SecurityContext.IsWindowsIdentityFlowSuppressed())
-//            {
-//                return SecurityContext.Capture();
-//            }
-//            using (SecurityContext.SuppressFlowWindowsIdentity())
-//            {
-//                return SecurityContext.Capture();
-//            }
-//        }
+        //        [SecurityCritical]
+        //        private static SecurityContext CaptureSecurityContextNoIdentityFlow()
+        //        {
+        //            if (SecurityContext.IsWindowsIdentityFlowSuppressed())
+        //            {
+        //                return SecurityContext.Capture();
+        //            }
+        //            using (SecurityContext.SuppressFlowWindowsIdentity())
+        //            {
+        //                return SecurityContext.Capture();
+        //            }
+        //        }
     }
 }
+
+#endif

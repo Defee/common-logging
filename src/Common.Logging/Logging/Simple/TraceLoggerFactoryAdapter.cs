@@ -58,7 +58,7 @@ namespace Common.Logging.Simple
     /// </remarks>
     /// <seealso cref="AbstractSimpleLoggerFactoryAdapter"/>
     /// <seealso cref="LogManager.Adapter"/>
-    /// <seealso cref="ConfigurationSectionHandler"/>
+    /// <seealso ref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-2.1"/>
     /// <author>Gilles Bayon</author>
     /// <author>Mark Pollack</author>
     /// <author>Erich Eichinger</author>
@@ -91,7 +91,7 @@ namespace Common.Logging.Simple
         /// <remarks>
         /// Looks for level, showDateTime, showLogName, dateTimeFormat items from 
         /// <paramref name="properties" /> for use when the GetLogger methods are called.
-        /// <see cref="ConfigurationSectionHandler"/> for more information on how to use the 
+        /// <see ref="https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-2.1"/> for more information on how to use the 
         /// standard .NET application configuraiton file (App.config/Web.config) 
         /// to configure this adapter.
         /// </remarks>

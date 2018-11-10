@@ -18,22 +18,12 @@
 
 #endregion
 
+using Common.Logging.Configuration;
+using Common.Logging.Simple;
 using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Common.Logging.Configuration;
-using Common.Logging.Simple;
-
-#if !NET20
-using System.Linq.Expressions;
-#endif
-
-#if !PORTABLE
-using System.Configuration;
-using System.Security;
-using System.Security.Permissions;
-#endif
 
 namespace Common.Logging
 {
@@ -89,8 +79,18 @@ namespace Common.Logging
         /// You can always change the source of your configuration settings by setting another <see cref="IConfigurationReader"/> instance
         /// on <see cref="ConfigurationReader"/>.
         /// </remarks>
-        public static string COMMON_LOGGING_SECTION { get { return "common/logging"; } }
-
+        public static string COMMON_LOGGING_SECTION
+        {
+            get
+            {
+#if NETFRAMEWORK
+                return "common/logging";
+#endif
+#if NETSTANDARD
+                return "common:logging";
+#endif
+            }
+        }
         /// <summary>
         /// The key of the default configuration section to read settings from.
         /// </summary>
@@ -478,8 +478,6 @@ namespace Common.Logging
         {
             return GetLogger(key);
         }
-
-
 
         /// <summary>
         /// Builds the logger factory adapter.

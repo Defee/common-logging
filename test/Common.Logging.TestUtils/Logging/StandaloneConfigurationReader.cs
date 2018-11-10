@@ -18,8 +18,13 @@
 
 #endregion
 
+using Common.Logging.Configuration;
 using System.Configuration;
 using System.Xml;
+#if NETSTANDARD
+using Common.Utils.Extensions.Config.Xml;
+using Microsoft.Extensions.Configuration;
+#endif
 
 namespace Common.Logging
 {
@@ -75,8 +80,37 @@ namespace Common.Logging
         /// <see cref="ConfigurationSectionHandler"/>
         public object GetSection(string sectionName)
         {
+#if NETFRAMEWORK
             ConfigurationSectionHandler handler = new ConfigurationSectionHandler();
             return handler.Create(null, null, BuildConfigurationSection(XmlString));
+#endif
+
+#if NETSTANDARD
+            var configBuilder = new ConfigurationBuilder();
+            configBuilder.AddXmlFromString(XmlString);
+            var config = configBuilder.Build();
+            var logConfiguration = NetCoreConfigurationHandler.InitLogConfigurationFromExistingConfig(config, sectionName);
+
+            // In case we failed to find the logger
+            //todo: a bad trick should be refactored
+            if (logConfiguration?.FactoryAdapter == null)
+                logConfiguration = new LogConfiguration
+                {
+                    FactoryAdapter = new FactoryAdapterConfiguration
+                    {
+                        Type = "NOOP",
+                        Arguments = logConfiguration?.FactoryAdapter?.Arguments != null ? logConfiguration.FactoryAdapter.Arguments : null
+                    }
+
+                };
+
+            // =========================================
+            logConfiguration.FactoryAdapter.Type = ShortcutHelper.ParseFactoryType(logConfiguration.FactoryAdapter.Type).ToString();
+            return new LogConfigurationReader(logConfiguration).GetSection(null);
+#endif
+
+
+
         }
 
         /// <summary>

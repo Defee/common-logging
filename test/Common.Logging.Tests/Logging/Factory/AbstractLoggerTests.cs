@@ -18,15 +18,22 @@
 
 #endregion
 
+using FakeItEasy;
+using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
-using NUnit.Framework;
+using FormatMessageCallback = System.Action<Common.Logging.FormatMessageHandler>;
+#if NETFRAMEWORK
 using Rhino.Mocks;
 using Rhino.Mocks.Interfaces;
-using FormatMessageCallback = System.Action<Common.Logging.FormatMessageHandler>;
-using Is=Rhino.Mocks.Constraints.Is;
+using Is = Rhino.Mocks.Constraints.Is;
+using MockRepository = Rhino.Mocks.MockRepository;
+#endif
+
+
 
 namespace Common.Logging.Factory
 {
@@ -46,7 +53,7 @@ namespace Common.Logging.Factory
         [Test]
         public void ImplementsAllMethodsForAllLevels()
         {
-            string[] logLevels = Exclude(Enum.GetNames(typeof (LogLevel)), "All", "Off");
+            string[] logLevels = Exclude(Enum.GetNames(typeof(LogLevel)), "All", "Off");
 
             foreach (string logLevel in logLevels)
             {
@@ -54,7 +61,7 @@ namespace Common.Logging.Factory
                 for (int i = 0; i < logLevels.Length; i++)
                 {
                     Assert.IsNotNull(logMethods[i],
-                                     "Method with signature #{0} not implemented for level {1}", i, logLevel);
+                        "Method with signature #{0} not implemented for level {1}", i, logLevel);
                 }
             }
         }
@@ -76,15 +83,13 @@ namespace Common.Logging.Factory
         /// </summary>
         private static void LogsMessage(string levelName)
         {
-            MockRepository mocks = new MockRepository();
-
             TestLogger log = new TestLogger();
             Exception ex = new Exception();
 
 
             MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
 
-            LogLevel logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), levelName);
+            LogLevel logLevel = (LogLevel) Enum.Parse(typeof(LogLevel), levelName);
 
             Invoke(log, logMethods[0], "messageObject0");
             Assert.AreEqual(logLevel, log.LastLogLevel);
@@ -96,22 +101,23 @@ namespace Common.Logging.Factory
             Assert.AreEqual("messageObject1", log.LastMessage);
             Assert.AreEqual(ex, log.LastException);
 
-            Invoke(log, logMethods[2], "format2 {0}", new object[] { "arg2" });
+            Invoke(log, logMethods[2], "format2 {0}", new object[] {"arg2"});
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format2 arg2", log.LastMessage);
             Assert.AreEqual(null, log.LastException);
 
-            Invoke(log, logMethods[3], "format3 {0}", ex, new object[] { "arg3" });
+            Invoke(log, logMethods[3], "format3 {0}", ex, new object[] {"arg3"});
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format3 arg3", log.LastMessage);
             Assert.AreEqual(ex, log.LastException);
 
-            Invoke(log, logMethods[4], CultureInfo.CreateSpecificCulture("de-de"), "format4 {0}", new object[] { 4.1 });
+            Invoke(log, logMethods[4], CultureInfo.CreateSpecificCulture("de-de"), "format4 {0}", new object[] {4.1});
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format4 4,1", log.LastMessage);
             Assert.AreEqual(null, log.LastException);
 
-            Invoke(log, logMethods[5], CultureInfo.CreateSpecificCulture("de-de"), "format5 {0}", ex, new object[] { 5.1 });
+            Invoke(log, logMethods[5], CultureInfo.CreateSpecificCulture("de-de"), "format5 {0}", ex,
+                new object[] {5.1});
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format5 5,1", log.LastMessage);
             Assert.AreEqual(ex, log.LastException);
@@ -126,12 +132,14 @@ namespace Common.Logging.Factory
             Assert.AreEqual("message7", log.LastMessage);
             Assert.AreEqual(ex, log.LastException);
 
-            Invoke(log, logMethods[8], CultureInfo.CreateSpecificCulture("de-de"), TestFormatMessageCallback.MessageCallback("format8 {0}", new object[] { 8.1 }));
+            Invoke(log, logMethods[8], CultureInfo.CreateSpecificCulture("de-de"),
+                TestFormatMessageCallback.MessageCallback("format8 {0}", new object[] {8.1}));
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format8 8,1", log.LastMessage);
             Assert.AreEqual(null, log.LastException);
 
-            Invoke(log, logMethods[9], CultureInfo.CreateSpecificCulture("de-de"), TestFormatMessageCallback.MessageCallback("format9 {0}", new object[] { 9.1 }), ex);
+            Invoke(log, logMethods[9], CultureInfo.CreateSpecificCulture("de-de"),
+                TestFormatMessageCallback.MessageCallback("format9 {0}", new object[] {9.1}), ex);
             Assert.AreEqual(logLevel, log.LastLogLevel);
             Assert.AreEqual("format9 9,1", log.LastMessage);
             Assert.AreEqual(ex, log.LastException);
@@ -145,7 +153,7 @@ namespace Common.Logging.Factory
             foreach (string logLevel in logLevels)
             {
                 WriteIsCalledWithCorrectLogLevel(logLevel);
-            }            
+            }
         }
 
         /// <summary>
@@ -154,6 +162,81 @@ namespace Common.Logging.Factory
         /// </summary>
         private static void WriteIsCalledWithCorrectLogLevel(string levelName)
         {
+            try
+            {
+#if NETCOREAPP
+                var log = A.Fake<AbstractTestLogger>(x => x.CallsBaseMethods());
+                var ex = A.Fake<Exception>(x => x.Strict());
+                var messageObject = A.Fake<object>(x => x.Strict());
+                var formatArg = A.Fake<object>(x => x.Strict());
+                FormatMessageCallback failCallback = TestFormatMessageCallback.FailCallback();
+
+                MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
+
+                LogLevel logLevel = (LogLevel) Enum.Parse(typeof(LogLevel), levelName);
+
+                // Todo: the below block doesn't make sense in the RhinoMock and here as well.
+                // Why do we call the same method again and again with the same constraints?
+
+                log.Log(logLevel, null, null);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                        A<Exception>.That.IsNull()))
+                    .MustHaveHappened();
+
+                log.Log(logLevel, null, ex);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+
+                log.Log(logLevel, null, null);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+
+                log.Log(logLevel, null, ex);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+
+
+
+                log.Log(logLevel, null, null);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsNull())).MustHaveHappened();
+
+
+                log.Log(logLevel, null, ex);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+
+                log.Log(logLevel, null, null);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsNull())).MustHaveHappened();
+
+                log.Log(logLevel, null, ex);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+
+                log.Log(logLevel, null, null);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsNull())).MustHaveHappened();
+
+                log.Log(logLevel, null, ex);
+                A.CallTo(() => log.Log(A<LogLevel>.That.Matches(it => it.GetType() == logLevel.GetType()), A<object>._,
+                    A<Exception>.That.IsSameAs(ex))).MustHaveHappened();
+                // ==============================================
+
+                Invoke(log, logMethods[0], messageObject);
+                Invoke(log, logMethods[1], messageObject, ex);
+                Invoke(log, logMethods[2], "format", new object[] {formatArg});
+                Invoke(log, logMethods[3], "format", ex, new object[] {formatArg});
+                Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] {formatArg});
+                Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] {formatArg});
+                Invoke(log, logMethods[6], failCallback);
+                Invoke(log, logMethods[7], failCallback, ex);
+                Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
+                Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
+
+#endif
+
+#if NETFRAMEWORK
             MockRepository mocks = new MockRepository();
 
             AbstractTestLogger log = (AbstractTestLogger)mocks.PartialMock(typeof(AbstractTestLogger));
@@ -164,7 +247,7 @@ namespace Common.Logging.Factory
 
             MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
 
-            LogLevel logLevel = (LogLevel) Enum.Parse(typeof (LogLevel), levelName);
+            LogLevel logLevel = (LogLevel)Enum.Parse(typeof(LogLevel), levelName);
 
             using (mocks.Ordered())
             {
@@ -202,7 +285,14 @@ namespace Common.Logging.Factory
             Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
             Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
 
-            mocks.VerifyAll();
+            mocks.VerifyAll(); 
+#endif
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
 
         [Test]
@@ -212,8 +302,28 @@ namespace Common.Logging.Factory
 
             foreach (string logLevel in logLevels)
             {
-                WriteAndEvaluateOnlyWhenLevelEnabled(logLevel);                
+                WriteAndEvaluateOnlyWhenLevelEnabled(logLevel);
             }
+        }
+
+        private static void TestLevel(AbstractLoggerTests invoker, AbstractLogger log, MethodInfo method,
+            object messageObject, string levelName, params object[] args)
+        {
+            A.CallTo(() => invoker.IsLevelEnabledWrapper(log, levelName)).Returns(false);
+            if (args != null && args.Any())
+            {
+                invoker.InvokeWrapper(log, method, messageObject, args);
+                A.CallTo(() => invoker.InvokeWrapper(log, method, messageObject, args)).MustHaveHappened();
+            }
+            else
+            {
+                invoker.InvokeWrapper(log, method, messageObject);
+                A.CallTo(() => invoker.InvokeWrapper(log, method, messageObject)).MustHaveHappened();
+            }
+
+            invoker.IsLevelEnabledWrapper(log, levelName);
+
+            A.CallTo(() => invoker.IsLevelEnabledWrapper(log, levelName)).MustHaveHappened();
         }
 
         /// <summary>
@@ -223,68 +333,120 @@ namespace Common.Logging.Factory
         /// </summary>
         private static void WriteAndEvaluateOnlyWhenLevelEnabled(string levelName)
         {
-            MockRepository mocks = new MockRepository();
-
-            AbstractLogger log = (AbstractLogger)mocks.StrictMock(typeof(AbstractLogger));
-            Exception ex = (Exception)mocks.StrictMock(typeof(Exception));
-            object messageObject = mocks.StrictMock(typeof(object));
-            object formatArg = mocks.StrictMock(typeof(object));
-            FormatMessageCallback failCallback = TestFormatMessageCallback.FailCallback();
-
-            MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
-
-            using (mocks.Ordered())
+            try
             {
+#if NETCOREAPP
+                var invoker = A.Fake<AbstractLoggerTests>();
+
+                var log = A.Fake<AbstractLogger>();
+                var ex = A.Fake<Exception>();
+                var messageObject = A.Fake<object>();
+                var formatArg = A.Fake<object>();
+                FormatMessageCallback failCallback = TestFormatMessageCallback.FailCallback();
+                MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
+
+                TestLevel(invoker, log, logMethods[0], messageObject, levelName);
+                TestLevel(invoker, log, logMethods[1], messageObject, levelName);
+                TestLevel(invoker, log, logMethods[2], messageObject, levelName, "format", new object[] {formatArg});
+                TestLevel(invoker, log, logMethods[3], messageObject, levelName, ex, new object[] {formatArg});
+                TestLevel(invoker, log, logMethods[4], messageObject, levelName, CultureInfo.InvariantCulture, "format",
+                    new object[] {formatArg});
+                TestLevel(invoker, log, logMethods[5], messageObject, levelName, CultureInfo.InvariantCulture, "format",
+                    ex, new object[] {formatArg});
+
+                TestLevel(invoker, log, logMethods[6], messageObject, levelName, failCallback);
+
+                TestLevel(invoker, log, logMethods[7], messageObject, levelName, failCallback, ex);
+                TestLevel(invoker, log, logMethods[8], messageObject, levelName, CultureInfo.InvariantCulture,
+                    failCallback, ex);
+
                 Invoke(log, logMethods[0], messageObject);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
                 Invoke(log, logMethods[1], messageObject, ex);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
-                Invoke(log, logMethods[2], "format", new object[] { formatArg });
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
-                Invoke(log, logMethods[3], "format", ex, new object[] { formatArg });
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
-                Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] { formatArg });
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
-                Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] { formatArg });
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                Invoke(log, logMethods[2], "format", new object[] {formatArg});
+                Invoke(log, logMethods[3], "format", ex, new object[] {formatArg});
+                Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] {formatArg});
+                Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] {formatArg});
                 Invoke(log, logMethods[6], failCallback);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
                 Invoke(log, logMethods[7], failCallback, ex);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
                 Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
                 Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
-                LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
-                Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+
+#endif
+#if NETFRAMEWORK
+                MockRepository mocks = new MockRepository();
+
+                AbstractLogger log = (AbstractLogger)mocks.StrictMock(typeof(AbstractLogger));
+                Exception ex = (Exception)mocks.StrictMock(typeof(Exception));
+                object messageObject = mocks.StrictMock(typeof(object));
+                object formatArg = mocks.StrictMock(typeof(object));
+                FormatMessageCallback failCallback = TestFormatMessageCallback.FailCallback();
+
+                MethodInfo[] logMethods = GetLogMethodSignatures(levelName);
+
+                using (mocks.Ordered())
+                {
+                    Invoke(log, logMethods[0], messageObject);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[1], messageObject, ex);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[2], "format", new object[] { formatArg });
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[3], "format", ex, new object[] { formatArg });
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] { formatArg });
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] { formatArg });
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[6], failCallback);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[7], failCallback, ex);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                    Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
+                    LastCall.CallOriginalMethod(OriginalCallOptions.CreateExpectation);
+                    Expect.Call(IsLevelEnabled(log, levelName)).Return(false);
+                }
+                mocks.ReplayAll();
+
+                Invoke(log, logMethods[0], messageObject);
+                Invoke(log, logMethods[1], messageObject, ex);
+                Invoke(log, logMethods[2], "format", new object[] { formatArg });
+                Invoke(log, logMethods[3], "format", ex, new object[] { formatArg });
+                Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] { formatArg });
+                Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] { formatArg });
+                Invoke(log, logMethods[6], failCallback);
+                Invoke(log, logMethods[7], failCallback, ex);
+                Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
+                Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
+
+                mocks.VerifyAll();
+#endif
             }
-            mocks.ReplayAll();
+            catch (Exception ex)
+            {
 
-            Invoke(log, logMethods[0], messageObject);
-            Invoke(log, logMethods[1], messageObject, ex);
-            Invoke(log, logMethods[2], "format", new object[] {formatArg});
-            Invoke(log, logMethods[3], "format", ex, new object[] { formatArg });
-            Invoke(log, logMethods[4], CultureInfo.InvariantCulture, "format", new object[] {formatArg});
-            Invoke(log, logMethods[5], CultureInfo.InvariantCulture, "format", ex, new object[] { formatArg });
-            Invoke(log, logMethods[6], failCallback);
-            Invoke(log, logMethods[7], failCallback, ex);
-            Invoke(log, logMethods[8], CultureInfo.InvariantCulture, failCallback);
-            Invoke(log, logMethods[9], CultureInfo.InvariantCulture, failCallback, ex);
+                throw ex;
+            }
+        }
 
-            mocks.VerifyAll();
+        protected virtual bool IsLevelEnabledWrapper(ILog log, string logLevelName)
+        {
+            return IsLevelEnabled(log, logLevelName);
         }
 
         private static bool IsLevelEnabled(ILog log, string logLevelName)
         {
-            switch(logLevelName)
+            switch (logLevelName)
             {
                 case "Trace":
                     return log.IsTraceEnabled;
@@ -304,37 +466,42 @@ namespace Common.Logging.Factory
         }
 
         private static readonly Type[][] methodSignatures =
-            {
-                new Type[] {typeof (object)},
-                new Type[] {typeof (object), typeof (Exception)},
-                new Type[] {typeof (string), typeof (object[])},
-                new Type[] {typeof (string), typeof (Exception), typeof (object[])},
-                new Type[] {typeof (IFormatProvider), typeof (string), typeof (object[])},
-                new Type[] {typeof (IFormatProvider), typeof (string), typeof (Exception), typeof (object[])},
-                new Type[] {typeof (FormatMessageCallback)},
-                new Type[] {typeof (FormatMessageCallback), typeof (Exception)},
-                new Type[] {typeof (IFormatProvider), typeof (FormatMessageCallback)},
-                new Type[] {typeof (IFormatProvider), typeof (FormatMessageCallback), typeof (Exception)}
-            };
+        {
+            new Type[] {typeof(object)},
+            new Type[] {typeof(object), typeof(Exception)},
+            new Type[] {typeof(string), typeof(object[])},
+            new Type[] {typeof(string), typeof(Exception), typeof(object[])},
+            new Type[] {typeof(IFormatProvider), typeof(string), typeof(object[])},
+            new Type[] {typeof(IFormatProvider), typeof(string), typeof(Exception), typeof(object[])},
+            new Type[] {typeof(FormatMessageCallback)},
+            new Type[] {typeof(FormatMessageCallback), typeof(Exception)},
+            new Type[] {typeof(IFormatProvider), typeof(FormatMessageCallback)},
+            new Type[] {typeof(IFormatProvider), typeof(FormatMessageCallback), typeof(Exception)}
+        };
 
         private static MethodInfo[] GetLogMethodSignatures(string levelName)
         {
             return new MethodInfo[]
-                       {
-                           typeof (ILog).GetMethod(levelName, methodSignatures[0]),
-                           typeof (ILog).GetMethod(levelName, methodSignatures[1]),
-                           typeof (ILog).GetMethod(levelName + "Format", methodSignatures[2]),
-                           typeof (ILog).GetMethod(levelName + "Format", methodSignatures[3]),
-                           typeof (ILog).GetMethod(levelName + "Format", methodSignatures[4]),
-                           typeof (ILog).GetMethod(levelName + "Format", methodSignatures[5]),
-                           typeof (ILog).GetMethod(levelName, methodSignatures[6]),
-                           typeof (ILog).GetMethod(levelName, methodSignatures[7]),
-                           typeof (ILog).GetMethod(levelName, methodSignatures[8]),
-                           typeof (ILog).GetMethod(levelName, methodSignatures[9])
-                       };
+            {
+                typeof(ILog).GetMethod(levelName, methodSignatures[0]),
+                typeof(ILog).GetMethod(levelName, methodSignatures[1]),
+                typeof(ILog).GetMethod(levelName + "Format", methodSignatures[2]),
+                typeof(ILog).GetMethod(levelName + "Format", methodSignatures[3]),
+                typeof(ILog).GetMethod(levelName + "Format", methodSignatures[4]),
+                typeof(ILog).GetMethod(levelName + "Format", methodSignatures[5]),
+                typeof(ILog).GetMethod(levelName, methodSignatures[6]),
+                typeof(ILog).GetMethod(levelName, methodSignatures[7]),
+                typeof(ILog).GetMethod(levelName, methodSignatures[8]),
+                typeof(ILog).GetMethod(levelName, methodSignatures[9])
+            };
         }
 
-        private static void Invoke(object target, MethodInfo method, params object[] args)
+        protected virtual void InvokeWrapper(object target, MethodInfo method, params object[] args)
+        {
+            Invoke(target, method, args);
+        }
+
+        public static void Invoke(object target, MethodInfo method, params object[] args)
         {
             method.Invoke(target, args);
         }
@@ -374,6 +541,7 @@ namespace Common.Logging.Factory
                 {
                     Assert.Fail();
                 }
+
                 fmh(messageToReturn, argsToReturn);
             }
         }
@@ -390,7 +558,8 @@ namespace Common.Logging.Factory
                     result.Add(s);
                 }
             }
-            return (string[]) result.ToArray(typeof (string));
+
+            return (string[]) result.ToArray(typeof(string));
         }
 
         public class TestLogger : AbstractTestLogger
@@ -473,6 +642,9 @@ namespace Common.Logging.Factory
             {
                 get { return true; }
             }
+
         }
+
     }
+
 }

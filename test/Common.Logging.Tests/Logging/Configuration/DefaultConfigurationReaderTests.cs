@@ -30,8 +30,15 @@ namespace Common.Logging.Configuration
     {
         [Test]
         public void ReadsAppConfig()
-        {            
-            Assert.AreEqual("FromAppConfig", ((System.Collections.Specialized.NameValueCollection)new DefaultConfigurationReader().GetSection("appSettings"))["appConfigCheck"]);
+        {
+#if NETCOREAPP
+            var logSettings = new DefaultConfigurationReader().GetSection("common") as LogSetting;
+            Assert.True(logSettings != null);
+            Assert.True(logSettings.Properties["showLogName"].ToLower() == "true");
+#endif
+#if NETFRAMEWORK
+        Assert.AreEqual("FromAppConfig", ((System.Collections.Specialized.NameValueCollection)new DefaultConfigurationReader().GetSection("appSettings"))["appConfigCheck"]);
+#endif
         }
     }
 }

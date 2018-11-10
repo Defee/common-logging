@@ -18,13 +18,13 @@
 
 #endregion
 
+using Common.TestUtil;
+using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
-using NUnit.Framework;
-using Common.TestUtil;
 
 namespace Common.Logging
 {
@@ -36,23 +36,31 @@ namespace Common.Logging
     /// Exercises basic API of the ILog implemetation.
     /// </remarks>
     /// <author>Mark Pollack</author>
-    //    [TestFixture]
+    [TestFixture]
     public abstract class ILogTestsBase
     {
+#if NETFRAMEWORK
+
+        protected ILogTestsBase()
+        {
+            
+        }
         protected SecurityTemplate Security;
 
         protected virtual string CompliantTrustLevelName { get { return SecurityTemplate.PERMISSIONSET_LOWTRUST; } }
-
+#endif
         [SetUp]
         public virtual void SetUp()
         {
+#if NETFRAMEWORK
             Security = new SecurityTemplate(true);
+#endif
             LogManager.Reset();
             LogManager.Adapter = GetLoggerFactoryAdapter();
         }
 
         protected abstract ILoggerFactoryAdapter GetLoggerFactoryAdapter();
-
+#if NETFRAMEWORK
         [Test]
         public void SecurityPolicyIsInPlace()
         {
@@ -66,6 +74,7 @@ namespace Common.Logging
                  });
             });
         }
+#endif
 
         [Test]
         public void LoggingWithNullParameters()
@@ -106,11 +115,16 @@ namespace Common.Logging
         [Test]
         public void CanCallIsEnabledFromTypeLog()
         {
+#if NETFRAMEWORK
             Security.PartialTrustInvoke(CompliantTrustLevelName, delegate
                                                                      {
-                                                                         CanCallIsEnabled(LogManager.GetCurrentClassLogger());
-                                                                     });
+                                                                         CanCallIsEnabled(LogManager.GetCurrentClassLogger());                                                     });
+#endif
+#if NETSTANDARD
+            Assert.DoesNotThrow(()=>CanCallIsEnabled(LogManager.GetCurrentClassLogger()));
+#endif
         }
+
 
         [Test]
         public void CanLogMessageFromNamedLog()
@@ -121,10 +135,15 @@ namespace Common.Logging
         [Test]
         public void CanLogMessageFromTypeLog()
         {
+#if NETFRAMEWORK
             Security.PartialTrustInvoke(CompliantTrustLevelName, delegate
             {
                 CanLogMessage(LogManager.GetLogger(this.GetType()));
             });
+#endif
+#if NETSTANDARD
+            Assert.DoesNotThrow(()=>CanLogMessage(LogManager.GetLogger(this.GetType())));
+#endif
         }
 
         [Test]
