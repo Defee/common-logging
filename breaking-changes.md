@@ -32,7 +32,7 @@ ___
 
 - **Silverlight** - use previous version (3.4.1) for the silverlight support. Microsoft is planning to abandon it.
 - **Portable** - portable framework was replaced by .NetStandard libraries and should be deleted.[MSDN](https://docs.microsoft.com/en-us/dotnet/standard/net-standard)
-- **CLS Compliance** - ignored. Might be added in future releases if deemed required by @sbolen.
+- **CLS Compliance** - ignored. Might be added in future releases if deemed required by @sbohlen.
 - **Migration to VS2018 Solution** - It broke Silverlight project :(.
 
 ___
@@ -143,7 +143,7 @@ It might be considered to move to the above configuration for both NETFRAMEWORK 
 
 1. Netcore web app logging (integration with Microsfot.Logger framework).
 1. Wrapper for the CommonLogger witn NLog with with line.
-1. Cleaning out the code when the modifications will be confirmed with @sbollen.
+1. Cleaning out the code when the modifications will be confirmed with @sbohlen.
 1. CLS - compatablity if required (object wrappers for the IConfiguration interfaces and other uncompitable methods which were added)
 
 #### Suggestions for the changes
