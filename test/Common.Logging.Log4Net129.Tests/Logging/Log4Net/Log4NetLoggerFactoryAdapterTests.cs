@@ -18,14 +18,14 @@
 
 #endregion
 
-using System;
 using Common.Logging.Configuration;
-using System.Reflection;
 using log4net.Appender;
 using log4net.Config;
 using log4net.Core;
 using NUnit.Framework;
 using Rhino.Mocks;
+using System;
+using System.Reflection;
 
 namespace Common.Logging.Log4Net
 {
@@ -43,6 +43,18 @@ namespace Common.Logging.Log4Net
         }
 
         public class TestAppender : AppenderSkeleton
+        {
+            public LoggingEvent LastLoggingEvent;
+
+            protected override void Append(LoggingEvent loggingEvent)
+            {
+                loggingEvent.Fix = FixFlags.LocationInfo;
+                LastLoggingEvent = loggingEvent;
+            }
+        }
+
+
+        public class TestLoggerRepository : AppenderSkeleton
         {
             public LoggingEvent LastLoggingEvent;
 
@@ -100,8 +112,13 @@ namespace Common.Logging.Log4Net
         public void LogsCorrectLoggerName()
         {
             TestAppender testAppender = new TestAppender();
+#if NETCOREAPP
+            var repository = log4net.LogManager.CreateRepository("Common.Logging.Repository");
+            BasicConfigurator.Configure(repository, testAppender);
+#endif
+#if !NETCOREAPP
             BasicConfigurator.Configure(testAppender);
-
+#endif
             Log4NetLoggerFactoryAdapter a;
             NameValueCollection props = new NameValueCollection();
 

@@ -1,5 +1,43 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+  <!--Version properties.-->
+  <PropertyGroup>
+    <Version>4.0.0</Version>
+    <PackageId>defee.Common.Logging.Core</PackageId>
+    <Title>defee.Common.Logging.Core</Title>
+    <Authors>Aleksandar Seovic, Mark Pollack, Erich Eichinger, Stephen Bohlen</Authors>
+    <Description>
+      NOTE: IT IS UNOFFICIAL RELEASE. IT WILL BE DELISTED WHEN OFFICIAL RELEASE GOES OUT.
+      Common.Logging.Core contains the portable (PCL) implementation of the Common.Logging low-level abstractions common to all other Common.Logging packages.
+    </Description>
+    <Copyright>Copyright 2006 - 2019 the Common Infrastructure Libraries Team.</Copyright>
+    <Company>
+      http://netcommon.sourceforge.net/
+    </Company>
+    <Trademark>
+      Apache License, Version 2.0
+    </Trademark>
+    <PackageTags>PCL Common.Logging.Portable Common.Logging.Core logging log Common.Logging</PackageTags>
+    <Product>
+      Common Logging Framework
+    </Product>
+  </PropertyGroup>
+  <!--Packaging properties.-->
+  <PropertyGroup>
+    <PackageIconUrl>https://raw.githubusercontent.com/net-commons/common-logging/master/nuget-graphics/common-logging-icon.png</PackageIconUrl>
+    <PackageReleaseNotes>
+      It is experemental package that is unofficial. Please see issue here: https://github.com/net-commons/common-logging/issues/148  for more info.
+      It is including some breaking changes:
+      - It dropped the support for the netstandard 1.0 now it supports only net40/net45 for some libraries and netstandard2.0.
+      It is done because some missing apis were migrated to crossplatform versions
+      - I think it is also in plans to drop support for the net45 and fully move to the netstandard libraries metapackage (It will be decided when official release will be ready)
+      - I don't know if entlib will be supported in future and it is not supported by this assembly.
+    </PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/net-commons/common-logging</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryType>git</RepositoryType>
+    <License>https://github.com/net-commons/common-logging/blob/master/license.txt</License>
+  </PropertyGroup>
+
   <PropertyGroup>
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>

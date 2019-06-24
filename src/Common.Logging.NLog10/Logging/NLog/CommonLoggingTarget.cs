@@ -94,7 +94,11 @@ namespace Common.Logging.NLog
         {
             if (LogManager.Adapter is NLogLoggerFactoryAdapter)
             {
-                throw new ConfigurationErrorsException("routing NLog events to Common.Logging configured with NLogLoggerFactoryAdapter results in an endless recursion");
+#if !PORTABLE
+                throw new System.Configuration.ConfigurationErrorsException("routing NLog events to Common.Logging configured with NLogLoggerFactoryAdapter results in an endless recursion");
+#else
+                throw new System.InvalidOperationException("routing NLog events to Common.Logging configured with NLogLoggerFactoryAdapter results in an endless recursion");
+#endif
             }
 
             ILog logger = LogManager.GetLogger(logEvent.LoggerName);

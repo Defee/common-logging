@@ -63,7 +63,8 @@ namespace Common.Logging.NLog
     /// <author>Erich Eichinger</author>
     public class NLogLoggerFactoryAdapter : AbstractCachingLoggerFactoryAdapter
     {
-         /// <summary>
+#if !PORTABLE
+        /// <summary>
         /// Constructor for binary backwards compatibility with non-portable versions
         /// </summary>
         /// <param name="properties">The properties.</param>
@@ -71,6 +72,8 @@ namespace Common.Logging.NLog
         public NLogLoggerFactoryAdapter(System.Collections.Specialized.NameValueCollection properties)
             : this(NameValueCollectionHelper.ToCommonLoggingCollection(properties))
         { }
+#endif
+
 
         /// <summary>
         /// Constructor
@@ -82,29 +85,39 @@ namespace Common.Logging.NLog
             string configType = string.Empty;
             string configFile = string.Empty;
 
-            if (properties != null) {
-                if (properties["configType"] != null) {
+            if (properties != null)
+            {
+                if (properties["configType"] != null)
+                {
                     configType = properties["configType"].ToUpper();
                 }
 
-                if (properties["configFile"] != null) {
+                if (properties["configFile"] != null)
+                {
                     configFile = properties["configFile"];
-                    if (configFile.StartsWith("~/") || configFile.StartsWith("~\\")) {
+#if !PORTABLE
+                    if (configFile.StartsWith("~/") || configFile.StartsWith("~\\"))
+                    {
                         configFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory.TrimEnd('/', '\\') + "/", configFile.Substring(2));
                     }
+#endif
                 }
 
-                if (configType == "FILE") {
-                    if (configFile == string.Empty) {
+                if (configType == "FILE")
+                {
+                    if (configFile == string.Empty)
+                    {
                         throw new ConfigurationException("Configuration property 'configFile' must be set for NLog configuration of type 'FILE'.");
                     }
 
-                    if (!File.Exists(configFile)) {
+                    if (!File.Exists(configFile))
+                    {
                         throw new ConfigurationException("NLog configuration file '" + configFile + "' does not exists");
                     }
                 }
             }
-            switch (configType) {
+            switch (configType)
+            {
                 case "INLINE":
                     break;
                 case "FILE":

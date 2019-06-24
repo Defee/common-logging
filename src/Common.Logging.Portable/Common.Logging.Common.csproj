@@ -41,9 +41,7 @@
       <Link>CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="CoverageExcludeAttribute.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="CoverageExcludeAttribute.cs" />
     <Compile Include="Logging\ConfigurationException.cs" />
     <Compile Include="Logging\Configuration\FactoryAdapterConfiguration.cs" />
     <Compile Include="Logging\Configuration\LogConfiguration.cs" />

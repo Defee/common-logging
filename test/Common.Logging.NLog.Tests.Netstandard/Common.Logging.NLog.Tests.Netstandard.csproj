@@ -34,10 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Logger\NLog\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Common.Logging.NLog.Netstandard\Common.Logging.NLog.Netstandard.csproj" />
     <ProjectReference Include="..\Common.Logging.TestUtils\Common.Logging.TestUtils-net40.csproj" />
   </ItemGroup>

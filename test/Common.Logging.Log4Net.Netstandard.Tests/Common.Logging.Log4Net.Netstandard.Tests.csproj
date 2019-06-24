@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Version>4.0.0</Version>
+    <Title>defee.Common.Logging.Log4Net208</Title>
+    <Authors>Aleksandar Seovic, Mark Pollack, Erich Eichinger, Stephen Bohlen, G. Stoynev</Authors>
+    <Description>
+      NOTE: IT IS UNOFFICIAL RELEASE. IT WILL BE DELISTED WHEN OFFICIAL RELEASE GOES OUT.
+      Common.Logging library bindings for Log4Net 2.0.8 logging framework.
+    </Description>
+    <Copyright>Copyright 2006 - 2019 the Common Infrastructure Libraries Team.</Copyright>
+    <Company>
+      http://netcommon.sourceforge.net/
+    </Company>
+    <Trademark>
+      Apache License, Version 2.0
+    </Trademark>
+    <Product>
+      Common Logging Framework
+    </Product>
+  </PropertyGroup>
+  <!--Packaging properties.-->
+  <PropertyGroup>
+    <PackageId>defee.Common.Logging.Log4Net208</PackageId>
+    <PackageTags>Log4Net Common.Logging.Log4Net logging log Common.Logging</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/net-commons/common-logging/master/nuget-graphics/common-logging-icon.png</PackageIconUrl>
+    <PackageReleaseNotes>
+      It is experemental package that is unofficial. Please see issue here: https://github.com/net-commons/common-logging/issues/148  for more info.
+      It is including some breaking changes:
+      - It dropped the support for the netstandard 1.0 now it supports only net40/net45 for some libraries and netstandard2.0.
+      It is done because some missing apis were migrated to crossplatform versions
+      - I think it is also in plans to drop support for the net45 and fully move to the netstandard libraries (It will be decided when official release will be ready)
+      - I don't know if entlib will be supported in future and it is not supported by this assembly.
+    </PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/net-commons/common-logging</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryType>git</RepositoryType>
+    <License>https://github.com/net-commons/common-logging/blob/master/license.txt</License>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="NUnit" Version="3.11.0"></PackageReference>
+    <PackageReference Include="NUnit3TestAdapter" Version="3.11.0"></PackageReference>
+    <PackageReference Include="RhinoMocks" Version="3.6.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <!-- <Reference Include="log4net"> -->
+    <!--   <HintPath>..\..\lib\Log4Net208\net\net20-full\log4net.dll</HintPath> -->
+    <!-- </Reference> -->
+    <!-- <Reference Include="nunit.framework, Version=2.5.0.9015, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL"> -->
+    <!--   <SpecificVersion>False</SpecificVersion> -->
+    <!--   <HintPath>..\..\lib\net\2.0\nunit.framework.dll</HintPath> -->
+    <!-- </Reference> -->
+    <!-- <Reference Include="Rhino.Mocks, Version=3.5.0.1337, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL"> -->
+    <!--   <SpecificVersion>False</SpecificVersion> -->
+    <!--   <HintPath>..\..\lib\net\2.0\Rhino.Mocks.dll</HintPath> -->
+    <!-- </Reference> -->
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+
+
+  <PropertyGroup>
+    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{77333B27-C652-442E-BD9C-8E884811790C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Common</RootNamespace>
+    <AssemblyName>Common.Logging.Log4Net208.Tests</AssemblyName>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\build\net20\Common.Logging.Log4Net208.Tests\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\build\net20\Common.Logging.Log4Net208.Tests\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+ 
+  <ItemGroup>
+    <Compile Include="..\Common.Logging.Log4Net129.Tests\Logging\Log4Net\CommonLoggingAppenderTests.cs">
+      <Link>Logging\Log4Net\CommonLoggingAppenderTests.cs</Link>
+    </Compile>
+    <Compile Include="..\Common.Logging.Log4Net129.Tests\Logging\Log4Net\Log4NetLoggerFactoryAdapterTests.cs">
+      <Link>Logging\Log4Net\Log4NetLoggerFactoryAdapterTests.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Logging\Log4Net\CommonLoggingAppenderTests_log4net.config.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Common.Logging.Core\Common.Logging.Core.2010.csproj" />
+    <ProjectReference Include="..\..\src\Common.Logging.Log4Net.Netstandard\Common.Logging.Log4Net.Netstandard.csproj" />
+    <ProjectReference Include="..\..\src\Common.Logging\Common.Logging.2010-net40.csproj" />
+  </ItemGroup>
+</Project>

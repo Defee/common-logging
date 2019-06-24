@@ -109,13 +109,13 @@ namespace Common.Logging.Log4Net
         /// </summary>
         public interface ILog4NetRuntime
         {
-            /// <summary>Calls <see cref="XmlConfigurator.Configure()"/></summary>
+            /// <summary>Calls <see cref="XmlConfigurator.Configure(log4net.Repository.ILoggerRepository)"/></summary>
             void XmlConfiguratorConfigure();
-            /// <summary>Calls <see cref="XmlConfigurator.Configure(System.IO.FileInfo)"/></summary>
+            /// <summary>Calls <see cref="XmlConfigurator.Configure(log4net.Repository.ILoggerRepository,System.IO.FileInfo)"/></summary>
             void XmlConfiguratorConfigure(string configFile);
-            /// <summary>Calls <see cref="XmlConfigurator.ConfigureAndWatch(System.IO.FileInfo)"/></summary>
+            /// <summary>Calls <see cref="XmlConfigurator.ConfigureAndWatch(log4net.Repository.ILoggerRepository, System.IO.FileInfo)"/></summary>
             void XmlConfiguratorConfigureAndWatch(string configFile);
-            /// <summary>Calls <see cref="BasicConfigurator.Configure()"/></summary>
+            /// <summary>Calls <see cref="BasicConfigurator.Configure(log4net.Repository.ILoggerRepository)"/></summary>
             void BasicConfiguratorConfigure();
             /// <summary>Calls <see cref="LogManager.GetLogger(string)"/></summary>
             log4net.ILog GetLogger(string name);
@@ -123,25 +123,53 @@ namespace Common.Logging.Log4Net
 
         private class Log4NetRuntime : ILog4NetRuntime
         {
+            private const string commonLoggingRepositoryName = "Common.Logging.Repository";
             public void XmlConfiguratorConfigure()
             {
+#if NETSTANDARD
+
+                var repository = log4net.LogManager.CreateRepository(commonLoggingRepositoryName);
+                XmlConfigurator.Configure(repository);
+#endif
+#if Net45
                 XmlConfigurator.Configure();
+#endif
+
             }
             public void XmlConfiguratorConfigure(string configFile)
             {
+#if NETSTANDARD
+
+                var repository = log4net.LogManager.CreateRepository(commonLoggingRepositoryName);
+                XmlConfigurator.Configure(repository, new FileInfo(configFile));
+#endif
+#if Net45
                 XmlConfigurator.Configure(new FileInfo(configFile));
+#endif
+
             }
             public void XmlConfiguratorConfigureAndWatch(string configFile)
             {
+#if NETSTANDARD
+
+                var repository = log4net.LogManager.CreateRepository(commonLoggingRepositoryName);
+                XmlConfigurator.ConfigureAndWatch(repository, new FileInfo(configFile));
+#endif
+#if Net45
                 XmlConfigurator.ConfigureAndWatch(new FileInfo(configFile));
+#endif
+
             }
             public void BasicConfiguratorConfigure()
             {
-                BasicConfigurator.Configure();
+                #if NETSTANDARD
+                var repository = log4net.LogManager.CreateRepository(commonLoggingRepositoryName);
+                BasicConfigurator.Configure(repository);
+                #endif
             }
             public log4net.ILog GetLogger(string name)
             {
-                return log4net.LogManager.GetLogger(name);
+                return log4net.LogManager.GetLogger(commonLoggingRepositoryName,name);
             }
         }
 

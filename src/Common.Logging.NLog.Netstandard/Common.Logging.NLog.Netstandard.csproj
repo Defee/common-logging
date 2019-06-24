@@ -1,4 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!--Version properties.-->
+  <PropertyGroup>
+    <Version>4.0.0</Version>
+    <Title>defee.Common.Logging.NLog</Title>
+    <Authors>Aleksandar Seovic, Mark Pollack, Erich Eichinger, Stephen Bohlen</Authors>
+    <Description>
+      NOTE: IT IS UNOFFICIAL RELEASE. IT WILL BE DELISTED WHEN OFFICIAL RELEASE GOES OUT.
+      Common.Logging library bindings for NLog logging framework
+    </Description>
+    <Copyright>Copyright 2006 - 2019 the Common Infrastructure Libraries Team.</Copyright>
+    <Company>
+      http://netcommon.sourceforge.net/
+    </Company>
+    <Trademark>
+      Apache License, Version 2.0
+    </Trademark>
+    <Product>
+      Common Logging Framework
+    </Product>
+  </PropertyGroup>
+  <!--Packaging properties.-->
+  <PropertyGroup>
+    <PackageId>defee.Common.Logging.NLog45</PackageId>
+    <PackageTags>NLog Common.Logging.NLog logging log Common.Logging</PackageTags>
+    <PackageIconUrl>https://raw.githubusercontent.com/net-commons/common-logging/master/nuget-graphics/common-logging-icon.png</PackageIconUrl>
+    <PackageReleaseNotes>
+      It is experemental package that is unofficial. Please see issue here: https://github.com/net-commons/common-logging/issues/148  for more info.
+      It is including some breaking changes:
+      - It dropped the support for the netstandard 1.0 now it supports only net40/net45 for some libraries and netstandard2.0.
+      It is done because some missing apis were migrated to crossplatform versions
+      - I think it is also in plans to drop support for the net45 and fully move to the netstandard libraries metapackage (It will be decided when official release will be ready)
+      - I don't know if entlib will be supported in future and it is not supported by this assembly.
+    </PackageReleaseNotes>
+    <RepositoryUrl>https://github.com/net-commons/common-logging</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <RepositoryType>git</RepositoryType>
+    <License>https://github.com/net-commons/common-logging/blob/master/license.txt</License>
+  </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
@@ -54,9 +92,13 @@
     <Compile Include="..\Common.Logging.NLog10\Logging\NLog\NLogLoggerFactoryAdapter.cs">
       <Link>Logging\NLog\NLogLoggerFactoryAdapter.cs</Link>
     </Compile>
-    <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>CommonAssemblyInfo.cs</Link>
-    </Compile>
+    <!-- 
+    Changes in the pr here were not cls compliant so i removed the common assembly file from it .
+    https://github.com/net-commons/common-logging/pull/176
+    -->
+    <!-- <Compile Include="..\CommonAssemblyInfo.cs"> -->
+    <!--   <Link>CommonAssemblyInfo.cs</Link> -->
+    <!-- </Compile> -->
     <Compile Include="..\Common.Logging.NLog20\Logging\NLog\NLogLogger.VariablesContext.cs">
       <Link>Logging\NLog\NLogLogger.VariablesContext.cs</Link>
     </Compile>
